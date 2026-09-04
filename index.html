@@ -105,10 +105,11 @@
 
     .elapsed-time { font-size: 1.1rem; color: var(--accent); font-weight: bold; }
 
-    /* QR Code Footer */
-    .qr-footer { display: flex; justify-content: space-around; width: 100%; max-width: 1200px; margin-top: 30px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 20px; }
-    .qr-box { text-align: center; display: flex; align-items: center; gap: 15px; }
-    .qr-code-img { background: #fff; padding: 5px; border-radius: 8px; }
+/* QR Code Footer */
+.qr-footer { display: flex; justify-content: space-around; width: 100%; max-width: 1200px; margin-top: 30px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; }
+.qr-box { text-align: center; display: flex; align-items: center; gap: 20px; }
+.qr-code-img { background: #fff; padding: 10px; border-radius: 12px; display: inline-block; }
+.qr-code-img img { display: block; }
 
     /* Controls Bar */
     .control-bar { margin-top: 20px; width: 100%; max-width: 1200px; display: flex; justify-content: center; gap: 20px; }
@@ -332,8 +333,8 @@
       document.getElementById('qrcode-teamA').innerHTML = "";
       document.getElementById('qrcode-teamB').innerHTML = "";
 
-      new QRCode(document.getElementById('qrcode-teamA'), { text: urlA, width: 90, height: 90 });
-      new QRCode(document.getElementById('qrcode-teamB'), { text: urlB, width: 90, height: 90 });
+      new QRCode(document.getElementById('qrcode-teamA'), { text: urlA, width: 220, height: 220 });
+      new QRCode(document.getElementById('qrcode-teamB'), { text: urlB, width: 220, height: 220 });
 
       document.getElementById('display-room-id').innerText = `رمز اللعبة: ${roomId}`;
       document.getElementById('name-teamA').innerText = gameConfig.teamA;
