@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ تحدي السرعة - الإجابة</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    body { background: #0f172a; color: #fff; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
+
+    .header { text-align: center; margin-bottom: 20px; }
+    .team-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: bold; margin-top: 5px; }
+    .team-A { background: #3b82f6; }
+    .team-B { background: #ef4444; }
+
+    .card { background: #1e293b; border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; }
+    .question { font-size: 1.4rem; font-weight: bold; text-align: center; margin-bottom: 15px; color: #f59e0b; }
+
+    textarea {
+      width: 100%; height: 180px; background: #0f172a; border: 2px solid #334155;
+      border-radius: 12px; color: #fff; padding: 15px; font-size: 1.1rem;
+      resize: none; margin-bottom: 15px;
+    }
+    textarea:focus { border-color: #3b82f6; outline: none; }
+
+    .btn-submit {
+      background: #10b981; color: #fff; border: none; padding: 16px;
+      border-radius: 12px; font-size: 1.3rem; font-weight: bold; width: 100%;
+      cursor: pointer; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+    }
+    .btn-submit:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
+
+    .message-box { text-align: center; padding: 20px; font-size: 1.3rem; font-weight: bold; display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>⚡ تحدي السرعة</h2>
+    <div id="team-tag" class="team-badge">جاري التحميل...</div>
+  </div>
+
+  <div class="card">
+    <div class="question" id="question-text">بانتظار بداية الجولة...</div>
+    
+    <div id="form-container">
+      <textarea id="answer-input" placeholder="اكتبوا الإجابات هنا، كل إجابة في سطر&#10;مثال:&#10;قلم&#10;فرشاة&#10;ألوان"></textarea>
+      <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">🚀 إرسال الإجابة</button>
+    </div>
+
+    <div id="message-box" class="message-box"></div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+
+  <script>
+    // الحصول على Room ID و Team ID من الـ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    const teamId = urlParams.get('team');
+
+    let currentRoundData = null;
+    let hasSubmitted = false;
+
+    if (!roomId || !teamId) {
+      document.body.innerHTML = "<h2 style='text-align:center; padding: 50px;'>⚠️ رابط غير صحيح!</h2>";
+    } else {
+      document.getElementById('team-tag').innerText = teamId === 'A' ? "🔵 الفريق الأول" : "🔴 الفريق الثاني";
+      document.getElementById('team-tag').classList.add(teamId === 'A' ? 'team-A' : 'team-B');
+      listenToGame();
+    }
+
+    function listenToGame() {
+      database.ref(`games/${roomId}/currentRoundData`).on('value', (snapshot) => {
+        currentRoundData = snapshot.val();
+
+        if (!currentRoundData || !currentRoundData.active) {
+          showStatus("⏱️ الجولة متوقفة أو انتهى الوقت!");
+          return;
+        }
+
+        // التأكد مما إذا كان الفريق قد أرسل إجابته سابقاً لهذه الجولة
+        database.ref(`games/${roomId}/answers/${currentRoundData.roundIndex}/${teamId}`).once('value').then(ansSnap => {
+          if (ansSnap.exists()) {
+            showStatus("✅ تم إرسال إجابتكم لهذه الجولة!");
+          } else {
+            resetForm();
+            document.getElementById('question-text').innerText = currentRoundData.question;
+          }
+        });
+      });
+    }
+
+    function submitAnswer() {
+      const text = document.getElementById('answer-input').value.trim();
+      if (!text) {
+        alert("الرجاء كتابة إجابة أولاً!");
+        return;
+      }
+
+      if (!currentRoundData || !currentRoundData.active) {
+        alert("انتهى وقت الجولة!");
+        return;
+      }
+
+      // حساب الفرق الزمني اللحظي بدقة
+      const now = Date.now();
+      const elapsed = ((now - currentRoundData.startTime) / 1000).toFixed(2);
+
+      const payload = {
+        answer: text,
+        submittedAt: now,
+        elapsed: parseFloat(elapsed)
+      };
+
+      document.getElementById('btn-submit').disabled = true;
+
+      database.ref(`games/${roomId}/answers/${currentRoundData.roundIndex}/${teamId}`).set(payload)
+        .then(() => {
+          showStatus(`✅ تم الإرسال بنجاح خلال ${elapsed} ثانية!`);
+        })
+        .catch(err => {
+          alert("حدث خطأ أثناء الإرسال!");
+          document.getElementById('btn-submit').disabled = false;
+        });
+    }
+
+    function showStatus(msg) {
+      document.getElementById('form-container').style.display = 'none';
+      const msgBox = document.getElementById('message-box');
+      msgBox.innerText = msg;
+      msgBox.style.display = 'block';
+    }
+
+    function resetForm() {
+      document.getElementById('form-container').style.display = 'block';
+      document.getElementById('message-box').style.display = 'none';
+      document.getElementById('answer-input').value = "";
+      document.getElementById('btn-submit').disabled = false;
+    }
+  </script>
+</body>
+</html>
