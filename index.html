@@ -8,6 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- مكتبة توليد الباركود QR Code -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     :root {
@@ -21,7 +23,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-    body { background-color: var(--bg-dark); color: var(--text-white); padding: 25px; text-align: center; overflow-x: hidden; }
+    body { background-color: var(--bg-dark); color: var(--text-white); padding: 20px; text-align: center; overflow-x: hidden; }
 
     .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .round-title { font-size: 2rem; font-weight: 900; color: var(--accent); }
@@ -40,8 +42,8 @@
     .question-card {
       background: var(--card-bg);
       border-radius: 20px;
-      padding: 25px;
-      margin-bottom: 25px;
+      padding: 20px;
+      margin-bottom: 20px;
       border: 1px solid rgba(255,255,255,0.1);
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
@@ -55,15 +57,17 @@
       display: inline-block;
       margin-bottom: 10px;
     }
-    .question-text { font-size: 2.2rem; font-weight: 900; line-height: 1.4; color: #fff; }
+    .question-text { font-size: 2rem; font-weight: 900; line-height: 1.4; color: #fff; }
 
-    .arena-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    .arena-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
     .team-card {
       background: var(--card-bg);
       border-radius: 20px;
       padding: 20px;
       border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
     }
     .team-card.team-a { border-color: var(--blue-team); }
     .team-card.team-b { border-color: var(--red-team); }
@@ -79,7 +83,23 @@
     .team-name { font-size: 1.8rem; font-weight: 900; }
     .team-counter { font-size: 1.2rem; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 12px; }
 
-    .answers-list { display: flex; flex-direction: column; gap: 10px; min-height: 250px; }
+    /* قسم الـ QR Code داخل شاشات الفرق */
+    .qr-box {
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 15px;
+      display: inline-block;
+      margin: 0 auto 15px auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    .qr-title {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .answers-list { display: flex; flex-direction: column; gap: 10px; min-height: 220px; flex-grow: 1; }
     .answer-item {
       background: #0f172a;
       padding: 12px 20px;
@@ -124,19 +144,33 @@
   </div>
 
   <div class="arena-container">
+    <!-- الفريق (أ) -->
     <div class="team-card team-a">
       <div class="team-header">
         <div class="team-name" style="color: var(--blue-team);">الفريق أ</div>
         <div class="team-counter" id="count-team-a">0 / 5</div>
       </div>
+
+      <div class="qr-title">امسح للولوج كـ (الفريق أ)</div>
+      <div class="qr-box">
+        <div id="qrcode-team-a"></div>
+      </div>
+
       <div class="answers-list" id="list-team-a"></div>
     </div>
 
+    <!-- الفريق (ب) -->
     <div class="team-card team-b">
       <div class="team-header">
         <div class="team-name" style="color: var(--red-team);">الفريق ب</div>
         <div class="team-counter" id="count-team-b">0 / 5</div>
       </div>
+
+      <div class="qr-title">امسح للولوج كـ (الفريق ب)</div>
+      <div class="qr-box">
+        <div id="qrcode-team-b"></div>
+      </div>
+
       <div class="answers-list" id="list-team-b"></div>
     </div>
   </div>
@@ -166,7 +200,22 @@
     const resultOverlay = document.getElementById('result-overlay');
     const winnerText = document.getElementById('winner-text');
 
-    // الاستماع لحالة الجولة والمؤقت من مسار games/gameState
+    // توليد الـ QR Code تلقائياً بناءً على مسار الصفحة الحالي
+    window.addEventListener('DOMContentLoaded', () => {
+      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+      const teamAUrl = `${baseUrl}/answer.html?team=A`;
+      const teamBUrl = `${baseUrl}/answer.html?team=B`;
+
+      new QRCode(document.getElementById("qrcode-team-a"), {
+        text: teamAUrl, width: 120, height: 120, colorDark: "#0f172a", colorLight: "#ffffff"
+      });
+
+      new QRCode(document.getElementById("qrcode-team-b"), {
+        text: teamBUrl, width: 120, height: 120, colorDark: "#0f172a", colorLight: "#ffffff"
+      });
+    });
+
+    // الاستماع لحالة الجولة والمؤقت عبر مسار games/gameState
     db.ref('games/gameState').on('value', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
