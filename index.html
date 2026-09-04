@@ -45,7 +45,8 @@
       border: 1px solid rgba(255,255,255,0.1); text-align: center;
     }
     .setup-card h1 { font-size: 2.5rem; color: var(--accent); margin-bottom: 10px; }
-    .setup-card p { opacity: 0.8; margin-bottom: 30px; }
+    .setup-card p { opacity: 0.8; margin-bottom: 10px; }
+    .rules-badge { display: inline-block; background: #000; border: 1px solid var(--accent); color: var(--accent); padding: 8px 16px; border-radius: 20px; font-weight: bold; margin-bottom: 30px; font-size: 0.9rem;}
 
     .form-group { margin-bottom: 20px; text-align: right; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
@@ -91,17 +92,20 @@
     }
     .team-card.team-a { border-color: var(--blue-team); }
     .team-card.team-b { border-color: var(--red-team); }
+    .team-card.winner { border-color: var(--accent); box-shadow: 0 0 30px rgba(245, 158, 11, 0.3); }
 
     .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
     .team-name { font-size: 1.8rem; font-weight: bold; }
     .team-score { font-size: 1.5rem; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 10px; }
 
-    .answer-status { font-size: 1.2rem; margin-bottom: 15px; color: #94a3b8; }
-    .answer-status.submitted { color: #10b981; font-weight: bold; }
+    .answer-status { font-size: 1.2rem; margin-bottom: 15px; color: #94a3b8; display: flex; align-items: center; gap: 10px;}
+    .answer-count { font-weight: bold; color: #fff; font-size: 1.4rem;}
+    .submitted-marker { display: none; color: #10b981; }
 
-    .answers-list { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; min-height: 160px; margin-bottom: 15px; text-align: right; }
-    .answer-item { font-size: 1.2rem; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+    .answers-list { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; min-height: 180px; margin-bottom: 15px; text-align: right; }
+    .answer-item { font-size: 1.2rem; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
     .answer-item:last-child { border: none; }
+    .answer-time { font-size: 0.9rem; color: #94a3b8; font-family: monospace; }
 
     .elapsed-time { font-size: 1.1rem; color: var(--accent); font-weight: bold; }
 
@@ -162,6 +166,7 @@
     <div class="setup-card">
       <h1>⚡ تحدي السرعة</h1>
       <p>فكر بسرعة • اكتب أكثر • أرسل قبل الخصم 🏆</p>
+      <div class="rules-badge">الفائز: أول فريق يرسل 5 إجابات صحيحة وبوقت أسرع ⏱️</div>
 
       <div class="form-group">
         <label>🔵 اسم الفريق الأول:</label>
@@ -174,13 +179,12 @@
       </div>
 
       <div class="form-group">
-        <label>⏱️ مدة السؤال (بالثواني):</label>
+        <label>⏱️ مدة الجولة القصوى (بالثواني):</label>
         <select id="select-duration">
-          <option value="30">30 ثانية</option>
-          <option value="45">45 ثانية</option>
-          <option value="60" selected>60 ثانية</option>
+          <option value="60">60 ثانية</option>
           <option value="90">90 ثانية</option>
-          <option value="120">120 ثانية</option>
+          <option value="120" selected>120 ثانية (دقيقتين)</option>
+          <option value="180">180 ثانية (3 دقائق)</option>
         </select>
       </div>
 
@@ -211,22 +215,28 @@
     </div>
 
     <div class="teams-container">
-      <div class="team-card team-a">
+      <div class="team-card team-a" id="card-teamA">
         <div class="team-header">
           <div class="team-name" id="name-teamA">الفريق الأزرق</div>
           <div class="team-score" id="score-teamA">0 نقاط</div>
         </div>
-        <div class="answer-status" id="status-teamA">بانتظار الإرسال...</div>
+        <div class="answer-status">
+            الإجابات: <span class="answer-count" id="count-teamA">0 / 5</span>
+            <span class="submitted-marker" id="marker-teamA">✅ تم الوصول</span>
+        </div>
         <div class="answers-list" id="answers-teamA"></div>
         <div class="elapsed-time" id="time-teamA"></div>
       </div>
 
-      <div class="team-card team-b">
+      <div class="team-card team-b" id="card-teamB">
         <div class="team-header">
           <div class="team-name" id="name-teamB">الفريق الأحمر</div>
           <div class="team-score" id="score-teamB">0 نقاط</div>
         </div>
-        <div class="answer-status" id="status-teamB">بانتظار الإرسال...</div>
+        <div class="answer-status">
+            الإجابات: <span class="answer-count" id="count-teamB">0 / 5</span>
+            <span class="submitted-marker" id="marker-teamB">✅ تم الوصول</span>
+        </div>
         <div class="answers-list" id="answers-teamB"></div>
         <div class="elapsed-time" id="time-teamB"></div>
       </div>
@@ -314,7 +324,12 @@
     let currentRoundIndex = 0;
     let timerInterval = null;
     let roundStartTime = 0;
-    let roundAnswers = { A: null, B: null };
+    let roundFinished = false;
+
+    // متسلسلة الإجابات والنتائج الجديدة
+    let teamAnswers = { A: [], B: [] }; // تتبع الإجابات الفردية
+    let roundWinner = null;
+    let totalScores = { A: 0, B: 0 };
 
     // الاتصال بالإنترنت
     window.addEventListener('online', () => document.getElementById('offline-banner').style.display = 'none');
@@ -336,17 +351,17 @@
       // اختيار أسئلة عشوائية بدون تكرار
       selectedQuestions = [...QUESTIONS_BANK].sort(() => 0.5 - Math.random()).slice(0, gameConfig.rounds);
 
-      // حفظ بيانات اللعبة في Firebase
+      // حفظ بيانات اللعبة في Firebase (نظام 5 إجابات فوز)
       database.ref(`games/${roomId}`).set({
         settings: gameConfig,
         scores: { A: 0, B: 0 },
         currentRound: 0,
-        status: "playing"
+        status: "playing",
+        winningRules: { type: "count_speed", count: 5 } // القانون الجديد
       }).then(() => {
         showScreen('screen-game');
         setupQRCodes();
         startRound(0);
-        listenToAnswers();
       });
     }
 
@@ -378,18 +393,21 @@
 
     function startRound(index) {
       currentRoundIndex = index;
-      roundAnswers = { A: null, B: null };
+      roundFinished = false;
+      roundWinner = null;
+      teamAnswers = { A: [], B: [] }; // إعادة تهيئة تتبع الإجابات
+      
       document.getElementById('btn-next-round').style.display = 'none';
 
-      // إعادة تهيئة الواجهة
-      document.getElementById('status-teamA').className = "answer-status";
-      document.getElementById('status-teamB').className = "answer-status";
-      document.getElementById('status-teamA').innerText = "بانتظار الإرسال...";
-      document.getElementById('status-teamB').innerText = "بانتظار الإرسال...";
-      document.getElementById('answers-teamA').innerHTML = "";
-      document.getElementById('answers-teamB').innerHTML = "";
-      document.getElementById('time-teamA').innerText = "";
-      document.getElementById('time-teamB').innerText = "";
+      // إعادة تهيئة الواجهة للجولة الجديدة
+      ['A', 'B'].forEach(team => {
+          document.getElementById(`card-team${team}`).className = `team-card team-${team.toLowerCase()}`;
+          document.getElementById(`count-team${team}`).innerText = "0 / 5";
+          document.getElementById(`count-team${team}`).className = "answer-count";
+          document.getElementById(`marker-team${team}`).style.display = "none";
+          document.getElementById(`answers-team${team}`).innerHTML = "";
+          document.getElementById(`time-team${team}`).innerText = "";
+      });
 
       const q = selectedQuestions[index];
       document.getElementById('display-round').innerText = `الجولة ${index + 1} / ${gameConfig.rounds}`;
@@ -398,17 +416,19 @@
 
       roundStartTime = Date.now();
 
-      // التحديث في Firebase لتعرف أجهزة الجوال
+      // التحديث في Firebase للجوال (نظام الإرسال الفوري لـ 5 إجابات)
       database.ref(`games/${roomId}/currentRoundData`).set({
         question: q.text,
         category: q.category,
         duration: gameConfig.duration,
         startTime: roundStartTime,
         roundIndex: index,
-        active: true
+        active: true,
+        answersCount: 0 // تتبع الإجابات للجوال
       });
 
       startTimer(gameConfig.duration);
+      listenToInstantAnswers(); // استماع للإرسال الفوري
     }
 
     function startTimer(seconds) {
@@ -443,72 +463,118 @@
       }, 1000);
     }
 
-    function listenToAnswers() {
-      database.ref(`games/${roomId}/answers/${currentRoundIndex}`).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
+    // استماع للإجابات الفردية الفورية بدلاً من إرسال جواب واحد
+    function listenToInstantAnswers() {
+      const answersRef = database.ref(`games/${roomId}/answers/${currentRoundIndex}`);
+      
+      // الاستماع لكافة الإجابات الجديدة في الجولة
+      answersRef.on('child_added', (snapshot) => {
+          if (roundFinished) return; // الجولة انتهت
 
-        ['A', 'B'].forEach(team => {
-          if (data[team] && !roundAnswers[team]) {
-            roundAnswers[team] = data[team];
-            renderTeamAnswer(team, data[team]);
-            playSound('success');
-            checkRoundCompletion();
+          const answerData = snapshot.val();
+          const team = answerData.team; // A أو B
+
+          if (team && teamAnswers[team].length < 5) {
+              teamAnswers[team].push(answerData);
+              renderSingleInstantAnswer(team, answerData);
+              playSound('success');
+              
+              checkInstantRoundCompletion(team);
           }
-        });
       });
     }
 
-    function renderTeamAnswer(team, answerData) {
-      const statusEl = document.getElementById(`status-team${team}`);
+    // عرض إجابة فردية فورية في القائمة
+    function renderSingleInstantAnswer(team, answerData) {
+      const countEl = document.getElementById(`count-team${team}`);
       const listEl = document.getElementById(`answers-team${team}`);
-      const timeEl = document.getElementById(`time-team${team}`);
+      
+      const count = teamAnswers[team].length;
+      countEl.innerText = `${count} / 5`;
 
-      statusEl.innerText = "✅ تم الإرسال";
-      statusEl.classList.add('submitted');
+      if (count === 5) {
+          countEl.classList.add('winner'); // تمييز الوصول لـ 5 إجابات
+      }
 
-      // عرض الإجابات المقسمة
-      const items = answerData.answer.split('\n').filter(i => i.trim() !== '');
-      listEl.innerHTML = items.map(i => `<div class="answer-item">• ${i}</div>`).join('');
-      timeEl.innerText = `⏱️ أرسل خلال ${answerData.elapsed} ثانية`;
+      // إضافة الإجابة الفردية للقائمة مع وقت الإرسال
+      const elapsedSecs = ((answerData.time - roundStartTime) / 1000).toFixed(1);
+      const answerHtml = `
+          <div class="answer-item">
+              <span class="answer-text">• ${answerData.answer}</span>
+              <span class="answer-time">⏳ ${elapsedSecs} ث</span>
+          </div>
+      `;
+      listEl.insertAdjacentHTML('beforeend', answerHtml);
     }
 
-    function checkRoundCompletion() {
-      if (roundAnswers.A && roundAnswers.B) {
+    // تحقق من اكتمال الإجابات فوراً بعد كل إرسال
+    function checkInstantRoundCompletion(team) {
+      if (teamAnswers[team].length >= 5) {
         clearInterval(timerInterval);
-        calculatePointsAndFinishRound();
+        finishRoundInstant(team); // إنهاء الجولة فوراً بالفوز
       }
     }
 
     function handleRoundTimeOut() {
-      // وقت الجولة انتهى
-      database.ref(`games/${roomId}/currentRoundData/active`).set(false);
-      calculatePointsAndFinishRound();
+      // وقت الجولة انتهى، ولم يصل أي فريق لـ 5 إجابات
+      finishRoundInstant(null); // لا يوجد فائز بالسرعة
     }
 
-    function calculatePointsAndFinishRound() {
+    // إنهاء الجولة فوراً مع تحديد الفائز
+    function finishRoundInstant(winnerTeam) {
+      if (roundFinished) return;
+      roundFinished = true;
+      roundWinner = winnerTeam;
+      
+      // إغلاق الجولة في قاعدة البيانات للجوال
       database.ref(`games/${roomId}/currentRoundData/active`).set(false);
+      
+      playSound('success'); // صوت تأكيد الفوز بالجولة
 
+      // تحديث الواجهة لإظهار الفائز بالجولة
+      if (winnerTeam) {
+          const cardEl = document.getElementById(`card-team${winnerTeam}`);
+          cardEl.classList.add('winner');
+          document.getElementById(`marker-team${winnerTeam}`).style.display = "inline";
+          
+          const finalTime = ((Date.now() - roundStartTime) / 1000).toFixed(1);
+          document.getElementById(`time-team${winnerTeam}`).innerText = `🏆 فاز بالسرعة خلال ${finalTime} ثانية`;
+      } else {
+          document.getElementById('display-question').innerText = "🤝 انتهى الوقت!";
+          playSound('warning');
+      }
+
+      calculateScoresAndShowNext();
+    }
+
+    // احتساب النقاط بناءً على قاعدة الفوز الجديدة (الفوز بالسرعة)
+    function calculateScoresAndShowNext() {
       let pointsA = 0;
       let pointsB = 0;
 
-      if (roundAnswers.A && roundAnswers.B) {
-        if (roundAnswers.A.elapsed < roundAnswers.B.elapsed) {
-          pointsA = 2; pointsB = 1;
-        } else {
-          pointsB = 2; pointsA = 1;
-        }
-      } else if (roundAnswers.A) {
-        pointsA = 2;
-      } else if (roundAnswers.B) {
-        pointsB = 2;
+      // الفائز بالسرعة (من وصل لـ 5 إجابات أولاً) يحصل على 2 نقطة
+      // الفريق الآخر يحصل على 1 نقطة إذا كان لديه إجابات صحيحة
+      if (roundWinner === 'A') {
+          pointsA = 2;
+          if (teamAnswers.B.length > 0) pointsB = 1; // 1 نقطة إذا كان لديهم إجابات
+      } else if (roundWinner === 'B') {
+          pointsB = 2;
+          if (teamAnswers.A.length > 0) pointsA = 1;
+      } else {
+          // لم يصل أحد لـ 5 إجابات، احتساب النقاط بناءً على عدد الإجابات الصحيحة
+          if (teamAnswers.A.length > teamAnswers.B.length) {
+              pointsA = 1;
+          } else if (teamAnswers.B.length > teamAnswers.A.length) {
+              pointsB = 1;
+          }
       }
 
-      // تحديث النقاط في قاعدة البيانات
+      // تحديث النقاط في قاعدة البيانات والواجهة
       database.ref(`games/${roomId}/scores`).once('value').then(snap => {
         let scores = snap.val() || { A: 0, B: 0 };
         scores.A += pointsA;
         scores.B += pointsB;
+        totalScores = scores; // حفظ النقاط الكلية
 
         database.ref(`games/${roomId}/scores`).set(scores);
         document.getElementById('score-teamA').innerText = `${scores.A} نقاط`;
@@ -527,37 +593,34 @@
     }
 
     function nextRound() {
-      // إزالة المستمع القديم لمنع التكرار
+      // إزالة المستمع القديم للإرسال الفوري
       database.ref(`games/${roomId}/answers/${currentRoundIndex}`).off();
 
       if (currentRoundIndex + 1 < gameConfig.rounds) {
         startRound(currentRoundIndex + 1);
-        listenToAnswers();
       } else {
         showFinalResults();
       }
     }
 
     function showFinalResults() {
-      database.ref(`games/${roomId}/scores`).once('value').then(snap => {
-        const scores = snap.val();
-        showScreen('screen-results');
-        playSound('victory');
-        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+      // عرض النتائج النهائية بناءً على النقاط الكلية
+      showScreen('screen-results');
+      playSound('victory');
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
 
-        let winnerText = "";
-        if (scores.A > scores.B) {
-          winnerText = `🏆 الفائز: ${gameConfig.teamA}!`;
-        } else if (scores.B > scores.A) {
-          winnerText = `🏆 الفائز: ${gameConfig.teamB}!`;
-        } else {
-          winnerText = "🤝 تعادل الفريقان!";
-        }
+      let winnerText = "";
+      if (totalScores.A > totalScores.B) {
+        winnerText = `🏆 الفائز: ${gameConfig.teamA}!`;
+      } else if (totalScores.B > totalScores.A) {
+        winnerText = `🏆 الفائز: ${gameConfig.teamB}!`;
+      } else {
+        winnerText = "🤝 تعادل الفريقان!";
+      }
 
-        document.getElementById('winner-text').innerText = winnerText;
-        document.getElementById('final-scores-text').innerText = 
-          `${gameConfig.teamA}: ${scores.A} نقطة | ${gameConfig.teamB}: ${scores.B} نقطة`;
-      });
+      document.getElementById('winner-text').innerText = winnerText;
+      document.getElementById('final-scores-text').innerText = 
+        `${gameConfig.teamA}: ${totalScores.A} نقطة | ${gameConfig.teamB}: ${totalScores.B} نقطة`;
     }
   </script>
 </body>
