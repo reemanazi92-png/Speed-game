@@ -1,10 +1,8 @@
 {
   "rules": {
     "games": {
-      "$roomId": {
-        ".read": true,
-        ".write": true
-      }
+      ".read": true,
+      ".write": true
     }
   }
 }
