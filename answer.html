@@ -8,142 +8,186 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-    body { background: #0f172a; color: #fff; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
-
-    .header { text-align: center; margin-bottom: 20px; }
-    .team-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: bold; margin-top: 5px; }
-    .team-A { background: #3b82f6; }
-    .team-B { background: #ef4444; }
-
-    .card { background: #1e293b; border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; }
-    .question { font-size: 1.4rem; font-weight: bold; text-align: center; margin-bottom: 15px; color: #f59e0b; }
-
-    textarea {
-      width: 100%; height: 180px; background: #0f172a; border: 2px solid #334155;
-      border-radius: 12px; color: #fff; padding: 15px; font-size: 1.1rem;
-      resize: none; margin-bottom: 15px;
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --blue-team: #3b82f6;
+      --red-team: #ef4444;
+      --accent: #f59e0b;
+      --text-white: #f8fafc;
     }
-    textarea:focus { border-color: #3b82f6; outline: none; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-white); padding: 20px; text-align: center; }
+
+    .header { margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;}
+    .team-badge { display: inline-block; padding: 8px 16px; border-radius: 12px; font-weight: bold; margin-bottom: 10px;}
+    .team-A { background: var(--blue-team); color: #fff; }
+    .team-B { background: var(--red-team); color: #fff; }
+    h1 { font-size: 1.8rem; margin-bottom: 5px; }
+    .round-info { opacity: 0.8; font-size: 1rem; }
+
+    .question-box { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); }
+    .question-text { font-size: 1.6rem; font-weight: bold; margin-top: 10px; color: #fff;}
+    .category-badge { display: inline-block; background: var(--accent); color: #000; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;}
+
+    .answers-container {
+        width: 100%;
+        margin-bottom: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .answer-row {
+        background: rgba(0,0,0,0.2);
+        padding: 15px;
+        border-radius: 12px;
+        text-align: right;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .answer-row label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .answer-input-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .answer-input {
+        flex-grow: 1;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        background: #0f172a;
+        color: #fff;
+        font-size: 1rem;
+    }
+
+    .answer-input:disabled { opacity: 0.5; }
 
     .btn-submit {
-      background: #10b981; color: #fff; border: none; padding: 16px;
-      border-radius: 12px; font-size: 1.3rem; font-weight: bold; width: 100%;
-      cursor: pointer; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #fff;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        width: 100px;
     }
-    .btn-submit:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
 
-    .message-box { text-align: center; padding: 20px; font-size: 1.3rem; font-weight: bold; display: none; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-submit.submitted { background: #334155; pointer-events: none;}
+
+    /* Status Overlays */
+    .screen-active { display: block; }
+    .status-overlay {
+        display: none;
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9);
+        z-index: 1000;
+        justify-content: center; align-items: center; flex-direction: column;
+        padding: 30px;
+    }
+    .status-overlay.active { display: flex; }
+    .status-icon { font-size: 4rem; margin-bottom: 20px; }
+    .status-title { font-size: 2rem; color: var(--accent); margin-bottom: 10px; }
+    .status-text { opacity: 0.8; margin-bottom: 30px; }
+
+    .btn-main {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff; border: none; padding: 16px 32px; border-radius: 16px;
+      font-size: 1.25rem; font-weight: bold; cursor: pointer; text-decoration: none;
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h2>⚡ تحدي السرعة</h2>
-    <div id="team-tag" class="team-badge">جاري التحميل...</div>
-  </div>
-
-  <div class="card">
-    <div class="question" id="question-text">بانتظار بداية الجولة...</div>
-    
-    <div id="form-container">
-      <textarea id="answer-input" placeholder="اكتبوا الإجابات هنا، كل إجابة في سطر&#10;مثال:&#10;قلم&#10;فرشاة&#10;ألوان"></textarea>
-      <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">🚀 إرسال الإجابة</button>
+  <div id="screen-game" class="screen-active">
+    <div class="header">
+      <div id="display-team-badge" class="team-badge">الفريق --</div>
+      <h1 id="display-team-name">--</h1>
+      <div class="round-info" id="display-round-id">الجولة - / -</div>
     </div>
 
-    <div id="message-box" class="message-box"></div>
+    <div class="question-box">
+        <span class="category-badge" id="display-category">--</span>
+        <div class="question-text" id="display-question">بانتظار السؤال...</div>
+    </div>
+
+    <div class="answers-container">
+        <!-- الإجابة 1 -->
+        <div class="answer-row">
+            <label>الإجابة 1:</label>
+            <div class="answer-input-group">
+                <input type="text" id="input-answer-1" class="answer-input" placeholder="اكتب الإجابة هنا..." disabled>
+                <button id="btn-submit-1" class="btn-submit" onclick="submitSingleAnswer(1)" disabled>
+                    إرسال <span id="icon-1">➡️</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- الإجابة 2 -->
+        <div class="answer-row">
+            <label>الإجابة 2:</label>
+            <div class="answer-input-group">
+                <input type="text" id="input-answer-2" class="answer-input" placeholder="اكتب الإجابة هنا..." disabled>
+                <button id="btn-submit-2" class="btn-submit" onclick="submitSingleAnswer(2)" disabled>
+                    إرسال <span id="icon-2">➡️</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- الإجابة 3 -->
+        <div class="answer-row">
+            <label>الإجابة 3:</label>
+            <div class="answer-input-group">
+                <input type="text" id="input-answer-3" class="answer-input" placeholder="اكتب الإجابة هنا..." disabled>
+                <button id="btn-submit-3" class="btn-submit" onclick="submitSingleAnswer(3)" disabled>
+                    إرسال <span id="icon-3">➡️</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- الإجابة 4 -->
+        <div class="answer-row">
+            <label>الإجابة 4:</label>
+            <div class="answer-input-group">
+                <input type="text" id="input-answer-4" class="answer-input" placeholder="اكتب الإجابة هنا..." disabled>
+                <button id="btn-submit-4" class="btn-submit" onclick="submitSingleAnswer(4)" disabled>
+                    إرسال <span id="icon-4">➡️</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- الإجابة 5 -->
+        <div class="answer-row">
+            <label>الإجابة 5:</label>
+            <div class="answer-input-group">
+                <input type="text" id="input-answer-5" class="answer-input" placeholder="اكتب الإجابة هنا..." disabled>
+                <button id="btn-submit-5" class="btn-submit" onclick="submitSingleAnswer(5)" disabled>
+                    إرسال <span id="icon-5">➡️</span>
+                </button>
+            </div>
+        </div>
+    </div>
   </div>
 
-  <script src="firebase-config.js"></script>
-
-  <script>
-    // الحصول على Room ID و Team ID من الـ URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('room');
-    const teamId = urlParams.get('team');
-
-    let currentRoundData = null;
-    let hasSubmitted = false;
-
-    if (!roomId || !teamId) {
-      document.body.innerHTML = "<h2 style='text-align:center; padding: 50px;'>⚠️ رابط غير صحيح!</h2>";
-    } else {
-      document.getElementById('team-tag').innerText = teamId === 'A' ? "🔵 الفريق الأول" : "🔴 الفريق الثاني";
-      document.getElementById('team-tag').classList.add(teamId === 'A' ? 'team-A' : 'team-B');
-      listenToGame();
-    }
-
-    function listenToGame() {
-      database.ref(`games/${roomId}/currentRoundData`).on('value', (snapshot) => {
-        currentRoundData = snapshot.val();
-
-        if (!currentRoundData || !currentRoundData.active) {
-          showStatus("⏱️ الجولة متوقفة أو انتهى الوقت!");
-          return;
-        }
-
-        // التأكد مما إذا كان الفريق قد أرسل إجابته سابقاً لهذه الجولة
-        database.ref(`games/${roomId}/answers/${currentRoundData.roundIndex}/${teamId}`).once('value').then(ansSnap => {
-          if (ansSnap.exists()) {
-            showStatus("✅ تم إرسال إجابتكم لهذه الجولة!");
-          } else {
-            resetForm();
-            document.getElementById('question-text').innerText = currentRoundData.question;
-          }
-        });
-      });
-    }
-
-    function submitAnswer() {
-      const text = document.getElementById('answer-input').value.trim();
-      if (!text) {
-        alert("الرجاء كتابة إجابة أولاً!");
-        return;
-      }
-
-      if (!currentRoundData || !currentRoundData.active) {
-        alert("انتهى وقت الجولة!");
-        return;
-      }
-
-      // حساب الفرق الزمني اللحظي بدقة
-      const now = Date.now();
-      const elapsed = ((now - currentRoundData.startTime) / 1000).toFixed(2);
-
-      const payload = {
-        answer: text,
-        submittedAt: now,
-        elapsed: parseFloat(elapsed)
-      };
-
-      document.getElementById('btn-submit').disabled = true;
-
-      database.ref(`games/${roomId}/answers/${currentRoundData.roundIndex}/${teamId}`).set(payload)
-        .then(() => {
-          showStatus(`✅ تم الإرسال بنجاح خلال ${elapsed} ثانية!`);
-        })
-        .catch(err => {
-          alert("حدث خطأ أثناء الإرسال!");
-          document.getElementById('btn-submit').disabled = false;
-        });
-    }
-
-    function showStatus(msg) {
-      document.getElementById('form-container').style.display = 'none';
-      const msgBox = document.getElementById('message-box');
-      msgBox.innerText = msg;
-      msgBox.style.display = 'block';
-    }
-
-    function resetForm() {
-      document.getElementById('form-container').style.display = 'block';
-      document.getElementById('message-box').style.display = 'none';
-      document.getElementById('answer-input').value = "";
-      document.getElementById('btn-submit').disabled = false;
-    }
-  </script>
-</body>
-</html>
+  <!-- Status Overlays -->
+  <div id="overlay-waiting" class="status-overlay">
+    <div class="status-icon">⏳</div>
+    <div class="status-title">بانتظار البدء...
