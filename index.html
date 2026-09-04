@@ -106,6 +106,21 @@
     }
     .result-overlay.active { display: flex; }
     .winner-title { font-size: 3.5rem; font-weight: 900; color: var(--green-win); margin-bottom: 15px; }
+
+    .btn-next-round {
+      margin-top: 25px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.5rem;
+      font-weight: 900;
+      border-radius: 15px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+      transition: transform 0.2s ease;
+    }
+    .btn-next-round:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
@@ -145,6 +160,7 @@
   <div class="result-overlay" id="result-overlay">
     <div class="winner-title">🏆 انتهت الجولة</div>
     <div style="font-size: 2rem;" id="winner-text">--</div>
+    <button class="btn-next-round" onclick="startNextRound()">🚀 بدء الجولة التالية</button>
   </div>
 
   <script>
@@ -156,12 +172,12 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // قائمة الإجابات المقبولة للتحقق من صحتها
     const validAnswers = ["الشهادتين", "شهادة ان لا اله الا الله", "الصلاة", "إقام الصلاة", "الزكاة", "إيتاء الزكاة", "الصوم", "صوم رمضان", "الحج", "حج البيت"];
 
     let timerSeconds = 60;
     let timerInterval = null;
     let isGameRunning = false;
+    let currentRoundId = 1;
 
     // توليد الباركود
     window.addEventListener('DOMContentLoaded', () => {
@@ -170,17 +186,21 @@
       new QRCode(document.getElementById("qrcode-team-b"), { text: `${baseUrl}/answer.html?team=B`, width: 110, height: 110 });
     });
 
-    // متابعة حالة اللعبة والتايمر
+    // متابعة حالة اللعبة
     db.ref('games/gameState').on('value', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
 
+      currentRoundId = data.roundId || 1;
       document.getElementById('question-display').innerText = data.currentQuestion || "اذكر 5 من أركان الإسلام؟";
       document.getElementById('category-display').innerText = data.category || "معلومات عامة";
-      document.getElementById('round-title').innerText = `الجولة ${data.roundId || 1}`;
+      document.getElementById('round-title').innerText = `الجولة ${currentRoundId}`;
 
-      if (data.status === 'started' && !isGameRunning) {
-        startLocalTimer(data.duration || 60);
+      if (data.status === 'started') {
+        document.getElementById('result-overlay').classList.remove('active');
+        if (!isGameRunning) {
+          startLocalTimer(data.duration || 60);
+        }
       } else if (data.status === 'finished') {
         stopTimer();
         document.getElementById('winner-text').innerText = data.winner || "انتهت الجولة";
@@ -188,17 +208,16 @@
       }
     });
 
-    // استماع وتحقق إجابات الفريق (أ)
+    // استماع إجابات الفريق (أ)
     db.ref('games/answers/teamA').on('value', (snapshot) => {
       processAnswers('A', snapshot.val() ? Object.values(snapshot.val()) : []);
     });
 
-    // استماع وتحقق إجابات الفريق (ب)
+    // استماع إجابات الفريق (ب)
     db.ref('games/answers/teamB').on('value', (snapshot) => {
       processAnswers('B', snapshot.val() ? Object.values(snapshot.val()) : []);
     });
 
-    // دالة معالجة وتدقيق الإجابات
     function processAnswers(team, answers) {
       const listElement = team === 'A' ? document.getElementById('list-team-a') : document.getElementById('list-team-b');
       const countElement = team === 'A' ? document.getElementById('count-team-a') : document.getElementById('count-team-b');
@@ -209,8 +228,6 @@
       answers.forEach((ans, idx) => {
         const item = document.createElement('div');
         const cleanText = ans.text.trim();
-        
-        // فحص هل الإجابة ضمن قائمة الإجابات المقبولة؟
         const isCorrect = validAnswers.some(v => cleanText.includes(v));
 
         if (isCorrect) {
@@ -227,7 +244,6 @@
 
       countElement.innerText = `${correctCount} / 5`;
 
-      // الشرط: الفوز يتحقق فقط عند الوصول لـ 5 إجابات **صحيحة**
       if (correctCount >= 5 && isGameRunning) {
         stopTimer();
         const winnerName = team === 'A' ? 'الفريق أ (الأزرق)' : 'الفريق ب (الأحمر)';
@@ -238,7 +254,22 @@
       }
     }
 
-    // دالة تشغيل التايمر التلقائي
+    // دالة الانتقال للجولة التالية
+    function startNextRound() {
+      // 1. مسح الإجابات القديمة
+      db.ref('games/answers').remove();
+
+      // 2. تحديث حالة اللعبة ورقم الجولة الجديدة
+      db.ref('games/gameState').update({
+        roundId: currentRoundId + 1,
+        status: 'started',
+        winner: ''
+      }).then(() => {
+        document.getElementById('result-overlay').classList.remove('active');
+        startLocalTimer(60);
+      });
+    }
+
     function startLocalTimer(duration) {
       isGameRunning = true;
       timerSeconds = duration;
