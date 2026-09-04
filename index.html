@@ -105,11 +105,31 @@
 
     .elapsed-time { font-size: 1.1rem; color: var(--accent); font-weight: bold; }
 
-/* QR Code Footer */
-.qr-footer { display: flex; justify-content: space-around; width: 100%; max-width: 1200px; margin-top: 30px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; }
-.qr-box { text-align: center; display: flex; align-items: center; gap: 20px; }
-.qr-code-img { background: #fff; padding: 10px; border-radius: 12px; display: inline-block; }
-.qr-code-img img { display: block; }
+    /* QR Code Footer (تحديث الحجم للتلفزيون) */
+    .qr-footer { 
+      display: flex; 
+      justify-content: space-around; 
+      width: 100%; 
+      max-width: 1200px; 
+      margin-top: 30px; 
+      background: rgba(0,0,0,0.4); 
+      padding: 25px; 
+      border-radius: 24px; 
+    }
+    .qr-box { text-align: center; display: flex; align-items: center; gap: 20px; }
+    .qr-code-img { 
+      background: #fff; 
+      padding: 12px; 
+      border-radius: 16px; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* إجبار الصورة و canvas على الحجم الجديد */
+    .qr-code-img img, .qr-code-img canvas {
+      width: 220px !important;
+      height: 220px !important;
+    }
 
     /* Controls Bar */
     .control-bar { margin-top: 20px; width: 100%; max-width: 1200px; display: flex; justify-content: center; gap: 20px; }
@@ -214,15 +234,15 @@
       <div class="qr-box">
         <div id="qrcode-teamA" class="qr-code-img"></div>
         <div>
-          <strong style="color: var(--blue-team);">🔵 الفريق الأول</strong><br>
-          <small>امسح للمشاركة</small>
+          <strong style="color: var(--blue-team); font-size: 1.3rem;">🔵 الفريق الأول</strong><br>
+          <span style="font-size: 1.1rem; opacity: 0.9;">امسح للمشاركة</span>
         </div>
       </div>
       <div class="qr-box">
         <div id="qrcode-teamB" class="qr-code-img"></div>
         <div>
-          <strong style="color: var(--red-team);">🔴 الفريق الثاني</strong><br>
-          <small>امسح للمشاركة</small>
+          <strong style="color: var(--red-team); font-size: 1.3rem;">🔴 الفريق الثاني</strong><br>
+          <span style="font-size: 1.1rem; opacity: 0.9;">امسح للمشاركة</span>
         </div>
       </div>
     </div>
@@ -333,6 +353,7 @@
       document.getElementById('qrcode-teamA').innerHTML = "";
       document.getElementById('qrcode-teamB').innerHTML = "";
 
+      // تكبير أبعاد توليد الـ QR إلى 220x220
       new QRCode(document.getElementById('qrcode-teamA'), { text: urlA, width: 220, height: 220 });
       new QRCode(document.getElementById('qrcode-teamB'), { text: urlB, width: 220, height: 220 });
 
