@@ -44,6 +44,7 @@
       margin-bottom: 20px;
       border: 1px solid rgba(255,255,255,0.1);
     }
+
     .category-badge {
       background: var(--accent);
       color: #000;
@@ -53,6 +54,7 @@
       display: inline-block;
       margin-bottom: 10px;
     }
+
     .question-text { font-size: 2rem; font-weight: 900; color: #fff; }
 
     .arena-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -65,6 +67,7 @@
       display: flex;
       flex-direction: column;
     }
+
     .team-card.team-a { border-color: var(--blue-team); }
     .team-card.team-b { border-color: var(--red-team); }
 
@@ -76,13 +79,38 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
       margin-bottom: 15px;
     }
+
     .team-name { font-size: 1.8rem; font-weight: 900; }
-    .team-counter { font-size: 1.2rem; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 12px; }
+    .team-counter {
+      font-size: 1.2rem;
+      background: rgba(255,255,255,0.1);
+      padding: 5px 15px;
+      border-radius: 12px;
+    }
 
-    .qr-box { background: #fff; padding: 10px; border-radius: 12px; display: inline-block; margin: 0 auto 15px auto; }
-    .qr-title { font-size: 0.85rem; color: #94a3b8; margin-bottom: 5px; font-weight: bold; }
+    .qr-box {
+      background: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      display: inline-block;
+      margin: 0 auto 15px auto;
+    }
 
-    .answers-list { display: flex; flex-direction: column; gap: 10px; min-height: 200px; flex-grow: 1; }
+    .qr-title {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .answers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 200px;
+      flex-grow: 1;
+    }
+
     .answer-item {
       padding: 12px 20px;
       border-radius: 12px;
@@ -92,20 +120,85 @@
       justify-content: space-between;
       align-items: center;
     }
-    .answer-item.correct { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
-    .answer-item.wrong { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
+
+    .answer-item.correct {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #10b981;
+    }
+
+    .answer-item.wrong {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #ef4444;
+    }
 
     .result-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(15, 23, 42, 0.95);
       display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 999;
+      padding: 20px;
     }
+
     .result-overlay.active { display: flex; }
-    .winner-title { font-size: 3.5rem; font-weight: 900; color: var(--green-win); margin-bottom: 15px; }
+
+    .winner-title {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--green-win);
+      margin-bottom: 10px;
+    }
+
+    .category-selection {
+      margin-top: 20px;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .category-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 15px;
+      color: var(--accent);
+    }
+
+    .category-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cat-btn {
+      background: #334155;
+      color: #fff;
+      border: 2px solid transparent;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cat-btn:hover,
+    .cat-btn.selected {
+      background: var(--accent);
+      color: #000;
+      border-color: #fff;
+    }
 
     .btn-next-round {
       margin-top: 25px;
@@ -113,16 +206,39 @@
       color: #000;
       border: none;
       padding: 15px 40px;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 900;
       border-radius: 15px;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
       transition: transform 0.2s ease;
     }
-    .btn-next-round:hover { transform: scale(1.05); }
+
+    .btn-next-round:hover {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 700px) {
+      .arena-container {
+        grid-template-columns: 1fr;
+      }
+
+      .question-text {
+        font-size: 1.5rem;
+      }
+
+      .round-title {
+        font-size: 1.5rem;
+      }
+
+      .timer-container {
+        font-size: 2rem;
+        padding: 8px 18px;
+      }
+    }
   </style>
 </head>
+
 <body>
 
   <div class="header-bar">
@@ -131,206 +247,1785 @@
   </div>
 
   <div class="question-card">
-    <span class="category-badge" id="category-display">معلومات عامة</span>
-    <div class="question-text" id="question-display">بانتظار تحميل السؤال...</div>
+    <span class="category-badge" id="category-display">القسم</span>
+    <div class="question-text" id="question-display">
+      اضغط على بدء اللعبة للبدء...
+    </div>
   </div>
 
   <div class="arena-container">
+
     <div class="team-card team-a">
       <div class="team-header">
         <div class="team-name" style="color: var(--blue-team);">الفريق أ</div>
         <div class="team-counter" id="count-team-a">0 / 5</div>
       </div>
+
       <div class="qr-title">امسح للولوج كـ (الفريق أ)</div>
-      <div class="qr-box"><div id="qrcode-team-a"></div></div>
+
+      <div class="qr-box">
+        <div id="qrcode-team-a"></div>
+      </div>
+
       <div class="answers-list" id="list-team-a"></div>
     </div>
+
 
     <div class="team-card team-b">
       <div class="team-header">
         <div class="team-name" style="color: var(--red-team);">الفريق ب</div>
         <div class="team-counter" id="count-team-b">0 / 5</div>
       </div>
+
       <div class="qr-title">امسح للولوج كـ (الفريق ب)</div>
-      <div class="qr-box"><div id="qrcode-team-b"></div></div>
+
+      <div class="qr-box">
+        <div id="qrcode-team-b"></div>
+      </div>
+
       <div class="answers-list" id="list-team-b"></div>
     </div>
+
   </div>
 
-  <div class="result-overlay" id="result-overlay">
-    <div class="winner-title">🏆 انتهت الجولة</div>
-    <div style="font-size: 2rem;" id="winner-text">--</div>
-    <button class="btn-next-round" onclick="startNextRound()">🚀 بدء الجولة التالية</button>
+
+  <div class="result-overlay active" id="result-overlay">
+
+    <div class="winner-title" id="winner-title-header">
+      🎮 مرحباً بكم في تحدي السرعة
+    </div>
+
+    <div style="font-size: 1.8rem;" id="winner-text">
+      اختر القسم وابدأ الجولة الأولى!
+    </div>
+
+    <div class="category-selection">
+
+      <div class="category-title">
+        اختر قسم الجولة القادمة:
+      </div>
+
+      <div class="category-buttons" id="category-buttons-container">
+
+        <button class="cat-btn selected" onclick="selectCategory('الكل')">
+          🎲 عشوائي (شامل)
+        </button>
+
+        <button class="cat-btn" onclick="selectCategory('ديني')">
+          🕋 ديني
+        </button>
+
+        <button class="cat-btn" onclick="selectCategory('علمي')">
+          🔬 علمي وطبيعة
+        </button>
+
+        <button class="cat-btn" onclick="selectCategory('جغرافيا')">
+          🗺️ جغرافيا
+        </button>
+
+        <button class="cat-btn" onclick="selectCategory('تاريخ')">
+          📜 تاريخ
+        </button>
+
+        <button class="cat-btn" onclick="selectCategory('حروف')">
+          🔤 تحدي الحروف
+        </button>
+
+      </div>
+    </div>
+
+    <button class="btn-next-round" onclick="startNextRound()">
+      🚀 بدء الجولة الآن
+    </button>
+
   </div>
+
 
   <script>
+
     const firebaseConfig = {
       databaseURL: "https://speed-game-reem-default-rtdb.firebaseio.com/",
       projectId: "speed-game-reem"
     };
 
     firebase.initializeApp(firebaseConfig);
+
     const db = firebase.database();
 
-    // 📚 بنك الأسئلة المتنوعة (يمكنك إضافة أي أسئلة وإجابات جديدة هنا)
+
+    // =========================================================
+    // 📚 بنك الأسئلة - 100 سؤال
+    // =========================================================
+
     const questionsBank = [
+
+      // =====================================================
+      // 🕋 ديني - 20 سؤال
+      // =====================================================
+
       {
-        category: "معلومات إسلامية",
+        id: 101,
+        category: "ديني",
         question: "اذكر 5 من أركان الإسلام؟",
-        answers: ["الشهادتين", "الصلاة", "الزكاة", "الصوم", "الحج", "إقام الصلاة", "إيتاء الزكاة", "صوم رمضان", "حج البيت"]
+        answers: [
+          "الشهادتين", "الصلاة", "الزكاة", "الصوم", "الحج"
+        ]
       },
+
       {
-        category: "جغرافيا وتاريخ",
+        id: 102,
+        category: "ديني",
+        question: "اذكر 5 من أركان الإيمان؟",
+        answers: [
+          "الله", "الملائكة", "الكتب", "الرسل",
+          "اليوم الآخر", "القدر"
+        ]
+      },
+
+      {
+        id: 103,
+        category: "ديني",
+        question: "اذكر 5 من أسماء سور القرآن التي تبدأ بحرف الميم؟",
+        answers: [
+          "مريم", "المؤمنون", "المنافقون", "الملك",
+          "المدثر", "المزمل", "المعارج", "المطففين"
+        ]
+      },
+
+      {
+        id: 104,
+        category: "ديني",
+        question: "اذكر 5 من أسماء الأنبياء المذكورين في القرآن؟",
+        answers: [
+          "آدم", "نوح", "إبراهيم", "موسى", "عيسى",
+          "محمد", "يوسف", "يونس", "أيوب", "زكريا",
+          "يحيى", "إسماعيل", "إسحاق", "يعقوب", "داود"
+        ]
+      },
+
+      {
+        id: 105,
+        category: "ديني",
+        question: "اذكر 5 من أسماء زوجات النبي ﷺ؟",
+        answers: [
+          "خديجة", "سودة", "عائشة", "حفصة", "زينب",
+          "أم سلمة", "صفية", "ميمونة", "جويرية", "مارية"
+        ]
+      },
+
+      {
+        id: 106,
+        category: "ديني",
+        question: "اذكر 5 من سور القرآن القصيرة؟",
+        answers: [
+          "الإخلاص", "الفلق", "الناس", "الكوثر",
+          "العصر", "النصر", "المسد", "قريش", "الفيل"
+        ]
+      },
+
+      {
+        id: 107,
+        category: "ديني",
+        question: "اذكر 5 من الصلوات المفروضة؟",
+        answers: [
+          "الفجر", "الظهر", "العصر", "المغرب", "العشاء"
+        ]
+      },
+
+      {
+        id: 108,
+        category: "ديني",
+        question: "اذكر 5 من أسماء يوم القيامة الواردة في القرآن؟",
+        answers: [
+          "القيامة", "الساعة", "الحاقة", "القارعة",
+          "الغاشية", "الواقعة", "الآزفة", "يوم الدين"
+        ]
+      },
+
+      {
+        id: 109,
+        category: "ديني",
+        question: "اذكر 5 من أسماء الملائكة؟",
+        answers: [
+          "جبريل", "ميكائيل", "إسرافيل", "ملك الموت",
+          "مالك", "هاروت", "ماروت"
+        ]
+      },
+
+      {
+        id: 110,
+        category: "ديني",
+        question: "اذكر 5 من أشهر المساجد في الإسلام؟",
+        answers: [
+          "المسجد الحرام", "المسجد النبوي", "المسجد الأقصى",
+          "مسجد قباء", "مسجد القبلتين", "المسجد الأموي"
+        ]
+      },
+
+      {
+        id: 111,
+        category: "ديني",
+        question: "اذكر 5 من أشهر الغزوات؟",
+        answers: [
+          "بدر", "أحد", "الخندق", "خيبر", "حنين",
+          "تبوك", "فتح مكة"
+        ]
+      },
+
+      {
+        id: 112,
+        category: "ديني",
+        question: "اذكر 5 من الأشهر الهجرية؟",
+        answers: [
+          "محرم", "صفر", "ربيع الأول", "ربيع الآخر",
+          "جمادى الأولى", "رجب", "شعبان", "رمضان",
+          "شوال", "ذو القعدة", "ذو الحجة"
+        ]
+      },
+
+      {
+        id: 113,
+        category: "ديني",
+        question: "اذكر 5 من الأعمال التي يفعلها المسلم في رمضان؟",
+        answers: [
+          "الصيام", "الصلاة", "الصدقة", "قراءة القرآن",
+          "الدعاء", "الذكر", "قيام الليل", "الاعتكاف"
+        ]
+      },
+
+      {
+        id: 114,
+        category: "ديني",
+        question: "اذكر 5 من أسماء الصحابة المشهورين؟",
+        answers: [
+          "أبو بكر", "عمر", "عثمان", "علي", "بلال",
+          "خالد", "سلمان", "أبو هريرة", "ابن عباس"
+        ]
+      },
+
+      {
+        id: 115,
+        category: "ديني",
+        question: "اذكر 5 من الكتب السماوية التي ورد ذكرها؟",
+        answers: [
+          "القرآن", "التوراة", "الإنجيل", "الزبور", "صحف إبراهيم"
+        ]
+      },
+
+      {
+        id: 116,
+        category: "ديني",
+        question: "اذكر 5 من سور القرآن التي تبدأ بحرف القاف؟",
+        answers: [
+          "ق", "القصص", "القمر", "القيامة", "القلم",
+          "القارعة", "القدر"
+        ]
+      },
+
+      {
+        id: 117,
+        category: "ديني",
+        question: "اذكر 5 من أسماء أبواب الجنة؟",
+        answers: [
+          "الصلاة", "الريان", "الصدقة", "الجهاد",
+          "الحج", "الإيمان"
+        ]
+      },
+
+      {
+        id: 118,
+        category: "ديني",
+        question: "اذكر 5 من الأنبياء العرب؟",
+        answers: [
+          "محمد", "هود", "صالح", "شعيب", "إسماعيل"
+        ]
+      },
+
+      {
+        id: 119,
+        category: "ديني",
+        question: "اذكر 5 من أنواع الصدقة أو أعمال البر؟",
+        answers: [
+          "المال", "الطعام", "الماء", "الكلمة الطيبة",
+          "مساعدة المحتاج", "إطعام الفقير", "كفالة اليتيم"
+        ]
+      },
+
+      {
+        id: 120,
+        category: "ديني",
+        question: "اذكر 5 من السور التي تبدأ بكلمة الحمد؟",
+        answers: [
+          "الفاتحة", "الأنعام", "الكهف", "سبأ", "فاطر"
+        ]
+      },
+
+
+      // =====================================================
+      // 🔬 علمي وطبيعة - 20 سؤال
+      // =====================================================
+
+      {
+        id: 201,
+        category: "علمي",
+        question: "اذكر 5 من حواس الإنسان أو أعضاء الجسم؟",
+        answers: [
+          "السمع", "البصر", "اللمس", "التذوق", "الشم",
+          "القلب", "العين", "الأذن", "الجلد", "الرئة"
+        ]
+      },
+
+      {
+        id: 202,
+        category: "علمي",
+        question: "اذكر 5 من كواكب المجموعة الشمسية؟",
+        answers: [
+          "الأرض", "المريخ", "المشتري", "زحل",
+          "عطارد", "الزهرة", "أورانوس", "نبتون"
+        ]
+      },
+
+      {
+        id: 203,
+        category: "علمي",
+        question: "اذكر 5 أشكال هندسية؟",
+        answers: [
+          "مربع", "مستطيل", "مثلث", "دائرة",
+          "معين", "خماسي", "سداسي", "بيضاوي"
+        ]
+      },
+
+      {
+        id: 204,
+        category: "علمي",
+        question: "اذكر 5 من مصادر الطاقة؟",
+        answers: [
+          "الشمس", "الرياح", "الماء", "النفط",
+          "الغاز", "الفحم", "النووي"
+        ]
+      },
+
+      {
+        id: 205,
+        category: "علمي",
+        question: "اذكر 5 من الحيوانات التي تعيش في الماء؟",
+        answers: [
+          "سمك", "حوت", "دلفين", "قرش",
+          "أخطبوط", "حبار", "سلحفاة", "فقمة"
+        ]
+      },
+
+      {
+        id: 206,
+        category: "علمي",
+        question: "اذكر 5 من الحيوانات التي تطير؟",
+        answers: [
+          "نسر", "صقر", "حمامة", "عصفور",
+          "بومة", "غراب", "فراشة", "نحلة", "خفاش"
+        ]
+      },
+
+      {
+        id: 207,
+        category: "علمي",
+        question: "اذكر 5 من أجزاء النبات؟",
+        answers: [
+          "الجذر", "الساق", "الورقة", "الزهرة",
+          "الثمرة", "البذرة"
+        ]
+      },
+
+      {
+        id: 208,
+        category: "علمي",
+        question: "اذكر 5 من المعادن؟",
+        answers: [
+          "الذهب", "الفضة", "الحديد", "النحاس",
+          "الألمنيوم", "الزنك", "النيكل"
+        ]
+      },
+
+      {
+        id: 209,
+        category: "علمي",
+        question: "اذكر 5 من حالات المادة أو صورها؟",
+        answers: [
+          "صلبة", "سائلة", "غازية", "بلازما"
+        ]
+      },
+
+      {
+        id: 210,
+        category: "علمي",
+        question: "اذكر 5 من أعضاء جسم الإنسان؟",
+        answers: [
+          "القلب", "الكبد", "الرئة", "المعدة",
+          "الدماغ", "الكلى", "العين", "الأذن"
+        ]
+      },
+
+      {
+        id: 211,
+        category: "علمي",
+        question: "اذكر 5 من الحشرات؟",
+        answers: [
+          "نملة", "نحلة", "فراشة", "ذبابة",
+          "بعوضة", "جرادة", "خنفساء", "صرصور"
+        ]
+      },
+
+      {
+        id: 212,
+        category: "علمي",
+        question: "اذكر 5 من الكائنات التي تعيش في الصحراء؟",
+        answers: [
+          "جمل", "عقرب", "ثعلب", "أرنب",
+          "سحلية", "حية", "يربوع"
+        ]
+      },
+
+      {
+        id: 213,
+        category: "علمي",
+        question: "اذكر 5 من أنواع الفواكه التي تحتوي على بذور؟",
+        answers: [
+          "تفاح", "برتقال", "بطيخ", "عنب",
+          "مانجو", "رمان", "خوخ", "مشمش"
+        ]
+      },
+
+      {
+        id: 214,
+        category: "علمي",
+        question: "اذكر 5 من الحواس أو وظائفها؟",
+        answers: [
+          "النظر", "السمع", "الشم", "التذوق",
+          "اللمس"
+        ]
+      },
+
+      {
+        id: 215,
+        category: "علمي",
+        question: "اذكر 5 من الظواهر الطبيعية؟",
+        answers: [
+          "المطر", "البرق", "الرعد", "الزلازل",
+          "البراكين", "الكسوف", "الخسوف", "قوس قزح"
+        ]
+      },
+
+      {
+        id: 216,
+        category: "علمي",
+        question: "اذكر 5 من الأجهزة التي تعمل بالكهرباء؟",
+        answers: [
+          "تلفاز", "ثلاجة", "غسالة", "حاسوب",
+          "هاتف", "مكيف", "فرن", "مروحة"
+        ]
+      },
+
+      {
+        id: 217,
+        category: "علمي",
+        question: "اذكر 5 من مصادر الضوء؟",
+        answers: [
+          "الشمس", "المصباح", "النار", "البرق",
+          "النجوم", "الشمعة"
+        ]
+      },
+
+      {
+        id: 218,
+        category: "علمي",
+        question: "اذكر 5 من أنواع الصخور؟",
+        answers: [
+          "الجرانيت", "الرخام", "البازلت", "الحجر الجيري",
+          "الحجر الرملي", "الشيست"
+        ]
+      },
+
+      {
+        id: 219,
+        category: "علمي",
+        question: "اذكر 5 من الحيوانات الثديية؟",
+        answers: [
+          "أسد", "فيل", "حصان", "قطة",
+          "كلب", "حوت", "دلفين", "جمل", "قرد"
+        ]
+      },
+
+      {
+        id: 220,
+        category: "علمي",
+        question: "اذكر 5 من أجزاء الجهاز الهضمي؟",
+        answers: [
+          "الفم", "المريء", "المعدة", "الأمعاء",
+          "الكبد", "البنكرياس", "القولون"
+        ]
+      },
+
+
+      // =====================================================
+      // 🗺️ جغرافيا - 20 سؤال
+      // =====================================================
+
+      {
+        id: 301,
+        category: "جغرافيا",
         question: "اذكر 5 من دول الخليج العربي؟",
-        answers: ["السعودية", "الكويت", "القطر", "الإمارات", "البحرين", "عمان", "قطر"]
+        answers: [
+          "السعودية", "الكويت", "قطر", "الإمارات",
+          "البحرين", "عمان"
+        ]
       },
+
       {
-        category: "علوم وطبيعة",
-        question: "اذكر 5 من حواس الإنسان أو أعضاء الجسم الأساسية؟",
-        answers: ["السمع", "البصر", "اللمس", "التذوق", "الشم", "القلب", "العين", "الأذن", "الجلد"]
+        id: 302,
+        category: "جغرافيا",
+        question: "اذكر 5 عواصم عربية؟",
+        answers: [
+          "الرياض", "القاهرة", "أبوظبي", "الدوحة",
+          "الكويت", "عمان", "الرباط", "بغداد", "دمشق"
+        ]
       },
+
       {
-        category: "لغة عربية",
-        question: "اذكر 5 من الصلوات الخمس المكتوبة؟",
-        answers: ["الفجر", "الظهر", "العصر", "المغرب", "العشاء", "الصبح"]
+        id: 303,
+        category: "جغرافيا",
+        question: "اذكر 5 دول تبدأ بحرف الألف؟",
+        answers: [
+          "الإمارات", "الأردن", "الجزائر", "ألمانيا",
+          "أمريكا", "إسبانيا", "أستراليا", "إيطاليا"
+        ]
+      },
+
+      {
+        id: 304,
+        category: "جغرافيا",
+        question: "اذكر 5 مدن سعودية؟",
+        answers: [
+          "الرياض", "جدة", "الدمام", "مكة", "المدينة",
+          "الخبر", "الطائف", "أبها", "تبوك", "حائل"
+        ]
+      },
+
+      {
+        id: 305,
+        category: "جغرافيا",
+        question: "اذكر 5 دول عربية في قارة أفريقيا؟",
+        answers: [
+          "مصر", "السودان", "الجزائر", "المغرب",
+          "تونس", "ليبيا", "موريتانيا", "الصومال"
+        ]
+      },
+
+      {
+        id: 306,
+        category: "جغرافيا",
+        question: "اذكر 5 دول في قارة آسيا؟",
+        answers: [
+          "السعودية", "اليابان", "الصين", "الهند",
+          "كوريا", "إندونيسيا", "تايلاند", "العراق"
+        ]
+      },
+
+      {
+        id: 307,
+        category: "جغرافيا",
+        question: "اذكر 5 دول أوروبية؟",
+        answers: [
+          "فرنسا", "ألمانيا", "إيطاليا", "إسبانيا",
+          "بريطانيا", "البرتغال", "هولندا", "سويسرا"
+        ]
+      },
+
+      {
+        id: 308,
+        category: "جغرافيا",
+        question: "اذكر 5 دول تبدأ بحرف الميم؟",
+        answers: [
+          "مصر", "ماليزيا", "مالي", "مالطا",
+          "مدغشقر", "المغرب", "موزمبيق", "موريتانيا"
+        ]
+      },
+
+      {
+        id: 309,
+        category: "جغرافيا",
+        question: "اذكر 5 بحار أو محيطات؟",
+        answers: [
+          "البحر الأحمر", "البحر المتوسط", "الخليج العربي",
+          "المحيط الأطلسي", "المحيط الهادئ",
+          "المحيط الهندي", "المحيط المتجمد"
+        ]
+      },
+
+      {
+        id: 310,
+        category: "جغرافيا",
+        question: "اذكر 5 أنهار مشهورة؟",
+        answers: [
+          "النيل", "دجلة", "الفرات", "الأمازون",
+          "الدانوب", "الميسيسيبي", "اليانغتسي"
+        ]
+      },
+
+      {
+        id: 311,
+        category: "جغرافيا",
+        question: "اذكر 5 دول آسيوية عاصمتها ليست الرياض؟",
+        answers: [
+          "اليابان", "الصين", "الهند", "العراق",
+          "الأردن", "قطر", "الكويت", "الإمارات"
+        ]
+      },
+
+      {
+        id: 312,
+        category: "جغرافيا",
+        question: "اذكر 5 عواصم تبدأ بحرف الميم؟",
+        answers: [
+          "مدريد", "مسقط", "مقديشو", "موسكو",
+          "مانيلا", "مدغشقر"
+        ]
+      },
+
+      {
+        id: 313,
+        category: "جغرافيا",
+        question: "اذكر 5 دول لها سواحل على البحر الأحمر؟",
+        answers: [
+          "السعودية", "مصر", "السودان", "اليمن",
+          "الأردن", "إريتريا", "جيبوتي"
+        ]
+      },
+
+      {
+        id: 314,
+        category: "جغرافيا",
+        question: "اذكر 5 دول تبدأ بحرف السين؟",
+        answers: [
+          "السعودية", "السودان", "سوريا", "سنغافورة",
+          "سويسرا", "السويد", "سلوفاكيا", "سلوفينيا"
+        ]
+      },
+
+      {
+        id: 315,
+        category: "جغرافيا",
+        question: "اذكر 5 مدن عالمية مشهورة؟",
+        answers: [
+          "باريس", "لندن", "دبي", "نيويورك",
+          "طوكيو", "روما", "مدريد", "إسطنبول"
+        ]
+      },
+
+      {
+        id: 316,
+        category: "جغرافيا",
+        question: "اذكر 5 دول جزرية؟",
+        answers: [
+          "اليابان", "إندونيسيا", "الفلبين", "مالطا",
+          "البحرين", "سنغافورة", "المالديف"
+        ]
+      },
+
+      {
+        id: 317,
+        category: "جغرافيا",
+        question: "اذكر 5 دول تبدأ بحرف الباء؟",
+        answers: [
+          "البحرين", "بلجيكا", "بلغاريا", "بنغلاديش",
+          "باكستان", "بنما", "البرازيل", "بوتان"
+        ]
+      },
+
+      {
+        id: 318,
+        category: "جغرافيا",
+        question: "اذكر 5 دول أفريقية؟",
+        answers: [
+          "مصر", "الجزائر", "المغرب", "كينيا",
+          "نيجيريا", "جنوب أفريقيا", "تونس", "غانا"
+        ]
+      },
+
+      {
+        id: 319,
+        category: "جغرافيا",
+        question: "اذكر 5 دول عربية في قارة آسيا؟",
+        answers: [
+          "السعودية", "الإمارات", "قطر", "الكويت",
+          "البحرين", "عمان", "العراق", "الأردن",
+          "سوريا", "لبنان"
+        ]
+      },
+
+      {
+        id: 320,
+        category: "جغرافيا",
+        question: "اذكر 5 أماكن مشهورة في السعودية؟",
+        answers: [
+          "مكة", "المدينة", "الرياض", "العلا",
+          "جدة", "أبها", "الدرعية", "الخبر"
+        ]
+      },
+
+
+      // =====================================================
+      // 📜 تاريخ - 20 سؤال
+      // =====================================================
+
+      {
+        id: 401,
+        category: "تاريخ",
+        question: "اذكر 5 من الخلفاء الراشدين أو الصحابة المشهورين؟",
+        answers: [
+          "أبو بكر", "عمر", "عثمان", "علي",
+          "طلحة", "الزبير", "سعد", "سعيد",
+          "عبدالرحمن", "بلال"
+        ]
+      },
+
+      {
+        id: 402,
+        category: "تاريخ",
+        question: "اذكر 5 غزوات أو معارك إسلامية شهيرة؟",
+        answers: [
+          "بدر", "أحد", "الخندق", "خيبر",
+          "حنين", "تبوك", "اليرموك", "القادسية"
+        ]
+      },
+
+      {
+        id: 403,
+        category: "تاريخ",
+        question: "اذكر 5 حضارات قديمة؟",
+        answers: [
+          "المصرية", "الرومانية", "اليونانية", "الفارسية",
+          "البابلية", "السومرية", "الفينيقية"
+        ]
+      },
+
+      {
+        id: 404,
+        category: "تاريخ",
+        question: "اذكر 5 شخصيات تاريخية مشهورة؟",
+        answers: [
+          "صلاح الدين", "الإسكندر", "نابليون",
+          "ابن سينا", "ابن خلدون", "الخوارزمي",
+          "جابر بن حيان"
+        ]
+      },
+
+      {
+        id: 405,
+        category: "تاريخ",
+        question: "اذكر 5 من أشهر العلماء المسلمين؟",
+        answers: [
+          "الخوارزمي", "ابن سينا", "ابن الهيثم",
+          "الرازي", "جابر بن حيان", "ابن النفيس",
+          "البيروني"
+        ]
+      },
+
+      {
+        id: 406,
+        category: "تاريخ",
+        question: "اذكر 5 من المدن التاريخية المشهورة؟",
+        answers: [
+          "مكة", "المدينة", "بغداد", "دمشق",
+          "القاهرة", "القدس", "روما", "أثينا"
+        ]
+      },
+
+      {
+        id: 407,
+        category: "تاريخ",
+        question: "اذكر 5 من الاختراعات المهمة في التاريخ؟",
+        answers: [
+          "الطباعة", "الهاتف", "المصباح", "السيارة",
+          "الطائرة", "التلفاز", "الحاسوب", "الإنترنت"
+        ]
+      },
+
+      {
+        id: 408,
+        category: "تاريخ",
+        question: "اذكر 5 من عجائب العالم أو المعالم التاريخية الشهيرة؟",
+        answers: [
+          "الأهرامات", "سور الصين", "تاج محل",
+          "الكولوسيوم", "البتراء", "برج بيزا"
+        ]
+      },
+
+      {
+        id: 409,
+        category: "تاريخ",
+        question: "اذكر 5 من ملوك أو حكام مصر القديمة؟",
+        answers: [
+          "رمسيس", "توت عنخ آمون", "خوفو",
+          "تحتمس", "أحمس", "حتشبسوت"
+        ]
+      },
+
+      {
+        id: 410,
+        category: "تاريخ",
+        question: "اذكر 5 من الخلفاء أو حكام الدولة الأموية؟",
+        answers: [
+          "معاوية", "عبدالملك", "الوليد", "سليمان",
+          "عمر بن عبدالعزيز", "هشام", "مروان"
+        ]
+      },
+
+      {
+        id: 411,
+        category: "تاريخ",
+        question: "اذكر 5 من خلفاء الدولة العباسية؟",
+        answers: [
+          "أبو العباس", "أبو جعفر المنصور", "هارون الرشيد",
+          "المأمون", "المعتصم", "المتوكل"
+        ]
+      },
+
+      {
+        id: 412,
+        category: "تاريخ",
+        question: "اذكر 5 من أشهر الرحالة في التاريخ؟",
+        answers: [
+          "ابن بطوطة", "ماركو بولو", "كريستوفر كولومبوس",
+          "ابن جبير", "الإدريسي"
+        ]
+      },
+
+      {
+        id: 413,
+        category: "تاريخ",
+        question: "اذكر 5 من الشخصيات الأدبية العربية؟",
+        answers: [
+          "المتنبي", "الجاحظ", "نجيب محفوظ",
+          "طه حسين", "أحمد شوقي", "عنترة"
+        ]
+      },
+
+      {
+        id: 414,
+        category: "تاريخ",
+        question: "اذكر 5 من شعراء العصر الجاهلي؟",
+        answers: [
+          "امرؤ القيس", "عنترة", "زهير",
+          "طرفة", "لبيد", "عمرو بن كلثوم"
+        ]
+      },
+
+      {
+        id: 415,
+        category: "تاريخ",
+        question: "اذكر 5 من المعالم التاريخية في العالم العربي؟",
+        answers: [
+          "الأهرامات", "البتراء", "تدمر",
+          "قلعة حلب", "الدرعية", "الجامع الأزهر"
+        ]
+      },
+
+      {
+        id: 416,
+        category: "تاريخ",
+        question: "اذكر 5 من أشهر المتاحف في العالم؟",
+        answers: [
+          "اللوفر", "المتحف البريطاني",
+          "المتحف المصري", "متاحف الفاتيكان",
+          "متحف المتروبوليتان"
+        ]
+      },
+
+      {
+        id: 417,
+        category: "تاريخ",
+        question: "اذكر 5 من الفنون القديمة؟",
+        answers: [
+          "الرسم", "النحت", "الموسيقى",
+          "العمارة", "الشعر", "المسرح"
+        ]
+      },
+
+      {
+        id: 418,
+        category: "تاريخ",
+        question: "اذكر 5 من الشخصيات العلمية المشهورة عالميًا؟",
+        answers: [
+          "نيوتن", "أينشتاين", "غاليليو",
+          "داروين", "إديسون", "ماري كوري"
+        ]
+      },
+
+      {
+        id: 419,
+        category: "تاريخ",
+        question: "اذكر 5 من العلماء المسلمين في الطب أو العلوم؟",
+        answers: [
+          "ابن سينا", "الرازي", "ابن النفيس",
+          "ابن الهيثم", "الخوارزمي", "البيروني"
+        ]
+      },
+
+      {
+        id: 420,
+        category: "تاريخ",
+        question: "اذكر 5 من المعالم المشهورة في السعودية؟",
+        answers: [
+          "الحرم المكي", "المسجد النبوي", "العلا",
+          "الدرعية", "برج المملكة", "نافورة جدة",
+          "مركز الملك عبدالله المالي"
+        ]
+      },
+
+
+      // =====================================================
+      // 🔤 تحدي الحروف - 20 سؤال
+      // =====================================================
+
+      {
+        id: 501,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الميم (م)؟",
+        letter: "م",
+        answers: [
+          "مريم", "موز", "مانجو", "مدرسة",
+          "مفتاح", "محمد", "مطر", "مسجد",
+          "مكتب", "مدينة"
+        ]
+      },
+
+      {
+        id: 502,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف السين (س)؟",
+        letter: "س",
+        answers: [
+          "سارة", "ساعة", "سيارة", "سمك",
+          "سماء", "سعيد", "سكر", "سلمى",
+          "سيف", "سحاب"
+        ]
+      },
+
+      {
+        id: 503,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الباء (ب)؟",
+        letter: "ب",
+        answers: [
+          "باب", "برتقال", "بطيخ", "بيت",
+          "بحر", "بدر", "بسمة", "بصل",
+          "بطة", "بستان"
+        ]
+      },
+
+      {
+        id: 504,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الألف (ا)؟",
+        letter: "ا",
+        answers: [
+          "أسد", "أرنب", "أرز", "أب",
+          "أخت", "أمل", "أحمد", "إبراهيم",
+          "إبرة", "أرض"
+        ]
+      },
+
+      {
+        id: 505,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الراء (ر)؟",
+        letter: "ر",
+        answers: [
+          "رمان", "رجل", "ربيع", "ريشة",
+          "رمل", "ريم", "رسالة", "روبوت",
+          "رعد", "رياض"
+        ]
+      },
+
+      {
+        id: 506,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الكاف (ك)؟",
+        letter: "ك",
+        answers: [
+          "كتاب", "كرسي", "كرة", "كعك",
+          "كلب", "كوب", "كوكب", "كنز",
+          "كرتون", "كهرباء"
+        ]
+      },
+
+      {
+        id: 507,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف النون (ن)؟",
+        letter: "ن",
+        answers: [
+          "نمر", "نحلة", "نهر", "نجمة",
+          "نخلة", "نور", "نوافذ", "نار",
+          "نسر", "نبات"
+        ]
+      },
+
+      {
+        id: 508,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف التاء (ت)؟",
+        letter: "ت",
+        answers: [
+          "تفاح", "تمر", "تلفاز", "تاج",
+          "تمساح", "توت", "تلميذ", "تاريخ",
+          "تنين", "ترمس"
+        ]
+      },
+
+      {
+        id: 509,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الجيم (ج)؟",
+        letter: "ج",
+        answers: [
+          "جمل", "جبل", "جزر", "جوال",
+          "جرس", "جريدة", "جوهرة", "جدار",
+          "جزر", "جمعة"
+        ]
+      },
+
+      {
+        id: 510,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الدال (د)؟",
+        letter: "د",
+        answers: [
+          "دب", "دجاجة", "دراجة", "دولاب",
+          "دجاج", "دفتر", "دلو", "دراهم",
+          "دلفين", "دخان"
+        ]
+      },
+
+      {
+        id: 511,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الفاء (ف)؟",
+        letter: "ف",
+        answers: [
+          "فراشة", "فيل", "فراولة", "فستان",
+          "فم", "فهد", "فجر", "فانوس",
+          "فحم", "فلفل"
+        ]
+      },
+
+      {
+        id: 512,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف العين (ع)؟",
+        letter: "ع",
+        answers: [
+          "عنب", "عين", "عسل", "عصفور",
+          "علم", "عمر", "عربة", "عقرب",
+          "عطر", "عيد"
+        ]
+      },
+
+      {
+        id: 513,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف اللام (ل)؟",
+        letter: "ل",
+        answers: [
+          "ليمون", "لؤلؤ", "ليل", "لعبة",
+          "لوحة", "لبن", "لحم", "لوز",
+          "لسان", "لون"
+        ]
+      },
+
+      {
+        id: 514,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الهاء (هـ)؟",
+        letter: "ه",
+        answers: [
+          "هلال", "هاتف", "هدية", "هرم",
+          "هدهد", "هواء", "هند", "هرة",
+          "هلال", "هروب"
+        ]
+      },
+
+      {
+        id: 515,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الواو (و)؟",
+        letter: "و",
+        answers: [
+          "وردة", "ولد", "ورق", "وطن",
+          "وقت", "وحش", "وجه", "وسادة",
+          "وادي", "ورشة"
+        ]
+      },
+
+      {
+        id: 516,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الصاد (ص)؟",
+        letter: "ص",
+        answers: [
+          "صقر", "صابون", "صورة", "صندوق",
+          "صحراء", "صباح", "صحن", "صوت",
+          "صاروخ", "صفحة"
+        ]
+      },
+
+      {
+        id: 517,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف القاف (ق)؟",
+        letter: "ق",
+        answers: [
+          "قمر", "قلم", "قطة", "قهوة",
+          "قلب", "قصر", "قارب", "قميص",
+          "قرش", "قرآن"
+        ]
+      },
+
+      {
+        id: 518,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الشين (ش)؟",
+        letter: "ش",
+        answers: [
+          "شمس", "شجرة", "شارع", "شباك",
+          "شاي", "شوكولاتة", "شاحنة", "شلال",
+          "شعلة", "شعر"
+        ]
+      },
+
+      {
+        id: 519,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الحاء (ح)؟",
+        letter: "ح",
+        answers: [
+          "حصان", "حوت", "حليب", "حقيبة",
+          "حديقة", "حجر", "حبل", "حمامة",
+          "حلوى", "حارس"
+        ]
+      },
+
+      {
+        id: 520,
+        category: "حروف",
+        question: "اذكر 5 كلمات تبدأ بحرف الطاء (ط)؟",
+        letter: "ط",
+        answers: [
+          "طائرة", "طاولة", "طبيب", "طماطم",
+          "طريق", "طفل", "طبل", "طاووس",
+          "طعام", "طقس"
+        ]
       }
+
     ];
 
+
+    // =========================================================
+    // ⚙️ متغيرات اللعبة
+    // =========================================================
+
     let currentValidAnswers = [];
+    let currentLetter = null;
     let timerSeconds = 60;
     let timerInterval = null;
     let isGameRunning = false;
-    let currentRoundId = 1;
+    let currentRoundId = 0;
+    let selectedCategory = 'الكل';
+    let usedQuestionIds = [];
 
-    // توليد الباركود
+
+    // =========================================================
+    // 📱 إنشاء QR
+    // =========================================================
+
     window.addEventListener('DOMContentLoaded', () => {
-      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-      new QRCode(document.getElementById("qrcode-team-a"), { text: `${baseUrl}/answer.html?team=A`, width: 110, height: 110 });
-      new QRCode(document.getElementById("qrcode-team-b"), { text: `${baseUrl}/answer.html?team=B`, width: 110, height: 110 });
+
+      const baseUrl =
+        window.location.href.substring(
+          0,
+          window.location.href.lastIndexOf('/')
+        );
+
+      new QRCode(
+        document.getElementById("qrcode-team-a"),
+        {
+          text: `${baseUrl}/answer.html?team=A`,
+          width: 110,
+          height: 110
+        }
+      );
+
+      new QRCode(
+        document.getElementById("qrcode-team-b"),
+        {
+          text: `${baseUrl}/answer.html?team=B`,
+          width: 110,
+          height: 110
+        }
+      );
+
     });
 
-    // متابعة حالة اللعبة
+
+    // =========================================================
+    // 🎯 اختيار القسم
+    // =========================================================
+
+    function selectCategory(cat) {
+
+      selectedCategory = cat;
+
+      const buttons =
+        document.querySelectorAll('.cat-btn');
+
+      buttons.forEach(btn => {
+
+        btn.classList.remove('selected');
+
+        if (
+          btn.innerText.includes(cat) ||
+          (
+            cat === 'الكل' &&
+            btn.innerText.includes('عشوائي')
+          )
+        ) {
+          btn.classList.add('selected');
+        }
+
+      });
+
+    }
+
+
+    // =========================================================
+    // 🧹 توحيد الكتابة العربية
+    // =========================================================
+
+    function normalizeText(text) {
+
+      return String(text || '')
+        .trim()
+        .toLowerCase()
+
+        // إزالة التشكيل
+        .replace(/[\u064B-\u065F\u0670]/g, '')
+
+        // توحيد الهمزات
+        .replace(/[إأآٱ]/g, 'ا')
+
+        // توحيد الألف المقصورة
+        .replace(/ى/g, 'ي')
+
+        // توحيد التاء المربوطة والهاء
+        .replace(/ة/g, 'ه')
+
+        // توحيد الهمزة على الواو
+        .replace(/ؤ/g, 'و')
+
+        // توحيد الهمزة على الياء
+        .replace(/ئ/g, 'ي')
+
+        // إزالة التطويل
+        .replace(/ـ/g, '')
+
+        // إزالة المسافات والرموز وعلامات الترقيم
+        .replace(/[^\u0600-\u06FFa-zA-Z0-9]/g, '')
+
+        // إزالة "ال" من بداية الكلمة
+        .replace(/^ال/, '');
+    }
+
+
+    // =========================================================
+    // 🔤 توحيد الحرف
+    // =========================================================
+
+    function normalizeLetter(letter) {
+
+      return normalizeText(letter);
+    }
+
+
+    // =========================================================
+    // 🎮 استقبال حالة اللعبة من Firebase
+    // =========================================================
+
     db.ref('games/gameState').on('value', (snapshot) => {
+
       const data = snapshot.val();
+
       if (!data) return;
 
       currentRoundId = data.roundId || 1;
-      document.getElementById('question-display').innerText = data.currentQuestion || "بانتظار السؤال...";
-      document.getElementById('category-display').innerText = data.category || "عام";
-      document.getElementById('round-title').innerText = `الجولة ${currentRoundId}`;
 
-      // تعيين الكلمات الصحيحة الخاصة بالسؤال الحالي
-      if (data.validAnswers) {
-        currentValidAnswers = data.validAnswers;
-      } else {
-        currentValidAnswers = questionsBank[0].answers;
-      }
+      document.getElementById('question-display').innerText =
+        data.currentQuestion || "بانتظار السؤال...";
+
+      document.getElementById('category-display').innerText =
+        data.category || "عام";
+
+      document.getElementById('round-title').innerText =
+        `الجولة ${currentRoundId}`;
+
+      currentValidAnswers =
+        data.validAnswers || [];
+
+      currentLetter =
+        data.letter || null;
+
 
       if (data.status === 'started') {
-        document.getElementById('result-overlay').classList.remove('active');
+
+        document
+          .getElementById('result-overlay')
+          .classList.remove('active');
+
         if (!isGameRunning) {
-          startLocalTimer(data.duration || 60);
+
+          startLocalTimer(
+            data.duration || 60
+          );
+
         }
-      } else if (data.status === 'finished') {
-        stopTimer();
-        document.getElementById('winner-text').innerText = data.winner || "انتهت الجولة";
-        document.getElementById('result-overlay').classList.add('active');
+
       }
+
+      else if (data.status === 'finished') {
+
+        stopTimer();
+
+        document.getElementById(
+          'winner-title-header'
+        ).innerText = "🏆 انتهت الجولة";
+
+        document.getElementById(
+          'winner-text'
+        ).innerText =
+          data.winner || "انتهت الجولة";
+
+        document
+          .getElementById('result-overlay')
+          .classList.add('active');
+      }
+
     });
 
-    // استماع إجابات الفرق
+
+    // =========================================================
+    // 🔵 إجابات الفريق أ
+    // =========================================================
+
     db.ref('games/answers/teamA').on('value', (snapshot) => {
-      processAnswers('A', snapshot.val() ? Object.values(snapshot.val()) : []);
+
+      processAnswers(
+        'A',
+        snapshot.val()
+          ? Object.values(snapshot.val())
+          : []
+      );
+
     });
+
+
+    // =========================================================
+    // 🔴 إجابات الفريق ب
+    // =========================================================
 
     db.ref('games/answers/teamB').on('value', (snapshot) => {
-      processAnswers('B', snapshot.val() ? Object.values(snapshot.val()) : []);
+
+      processAnswers(
+        'B',
+        snapshot.val()
+          ? Object.values(snapshot.val())
+          : []
+      );
+
     });
 
+
+    // =========================================================
+    // ✅ فحص الإجابات
+    // =========================================================
+
     function processAnswers(team, answers) {
-      const listElement = team === 'A' ? document.getElementById('list-team-a') : document.getElementById('list-team-b');
-      const countElement = team === 'A' ? document.getElementById('count-team-a') : document.getElementById('count-team-b');
-      
+
+      const listElement =
+        team === 'A'
+          ? document.getElementById('list-team-a')
+          : document.getElementById('list-team-b');
+
+      const countElement =
+        team === 'A'
+          ? document.getElementById('count-team-a')
+          : document.getElementById('count-team-b');
+
+
       listElement.innerHTML = '';
+
       let correctCount = 0;
 
-      answers.forEach((ans, idx) => {
-        const item = document.createElement('div');
-        const cleanText = ans.text.trim();
-        const isCorrect = currentValidAnswers.some(v => cleanText.includes(v));
+      // يمنع تكرار نفس الإجابة
+      let usedWords = new Set();
 
-        if (isCorrect) {
-          correctCount++;
-          item.className = 'answer-item correct';
-          item.innerHTML = `<span><b>${idx + 1}.</b> ${ans.text}</span> <span>✅ إجابة صحيحة</span>`;
-        } else {
-          item.className = 'answer-item wrong';
-          item.innerHTML = `<span><b>${idx + 1}.</b> ${ans.text}</span> <span>❌ خاطئة</span>`;
+
+      answers.forEach((ans, idx) => {
+
+        const item =
+          document.createElement('div');
+
+        const rawText =
+          String(ans.text || '').trim();
+
+        const cleanText =
+          normalizeText(rawText);
+
+
+        let isCorrect = false;
+
+
+        // =====================================================
+        // 🔤 أسئلة الحروف
+        // =====================================================
+
+        if (currentLetter) {
+
+          const normalizedLetter =
+            normalizeLetter(currentLetter);
+
+          const startsWithLetter =
+            cleanText.startsWith(
+              normalizedLetter
+            );
+
+
+          // لازم تكون الإجابة موجودة فعليًا في البنك
+          const inBank =
+            currentValidAnswers.some(v => {
+
+              return normalizeText(v) === cleanText;
+
+            });
+
+
+          isCorrect =
+            startsWithLetter &&
+            inBank;
+
         }
-        
+
+
+        // =====================================================
+        // 📝 الأسئلة العادية
+        // =====================================================
+
+        else {
+
+          isCorrect =
+            currentValidAnswers.some(v => {
+
+              return normalizeText(v) === cleanText;
+
+            });
+
+        }
+
+
+        // =====================================================
+        // 🚫 منع التكرار
+        // =====================================================
+
+        const isNotDuplicate =
+          !usedWords.has(cleanText);
+
+
+        if (
+          isCorrect &&
+          isNotDuplicate &&
+          cleanText.length > 0
+        ) {
+
+          correctCount++;
+
+          usedWords.add(cleanText);
+
+          item.className =
+            'answer-item correct';
+
+          item.innerHTML =
+            `<span>
+              <b>${idx + 1}.</b> ${rawText}
+            </span>
+            <span>✅ صحيحة</span>`;
+
+        }
+
+        else {
+
+          item.className =
+            'answer-item wrong';
+
+          item.innerHTML =
+            `<span>
+              <b>${idx + 1}.</b> ${rawText}
+            </span>
+            <span>❌ خاطئة</span>`;
+
+        }
+
+
         listElement.appendChild(item);
+
       });
 
-      countElement.innerText = `${correctCount} / 5`;
 
-      if (correctCount >= 5 && isGameRunning) {
+      countElement.innerText =
+        `${correctCount} / 5`;
+
+
+      // =====================================================
+      // 🏆 فوز الفريق
+      // =====================================================
+
+      if (
+        correctCount >= 5 &&
+        isGameRunning
+      ) {
+
         stopTimer();
-        const winnerName = team === 'A' ? 'الفريق أ (الأزرق)' : 'الفريق ب (الأحمر)';
+
+        const winnerName =
+          team === 'A'
+            ? 'الفريق أ (الأزرق)'
+            : 'الفريق ب (الأحمر)';
+
+
         db.ref('games/gameState').update({
+
           status: 'finished',
-          winner: `🎉 فوز بالسرعة! ${winnerName} حقق 5 إجابات صحيحة أولاً!`
+
+          winner:
+            `🎉 فوز بالسرعة! ${winnerName} حقق 5 إجابات صحيحة أولاً!`
+
         });
+
       }
+
     }
 
-    // دالة الانتقال للـجولة التالية واختيار سؤال جديد تلقائياً
-    function startNextRound() {
-      // 1. اختيار سؤال جديد عشوائي من بنك الأسئلة
-      const randomQ = questionsBank[Math.floor(Math.random() * questionsBank.length)];
 
-      // 2. مسح الإجابات القديمة
+    // =========================================================
+    // 🚀 بدء الجولة التالية
+    // =========================================================
+
+    function startNextRound() {
+
+      let availableQuestions =
+        questionsBank.filter(
+          q => !usedQuestionIds.includes(q.id)
+        );
+
+
+      // فلترة حسب القسم
+      if (selectedCategory !== 'الكل') {
+
+        availableQuestions =
+          availableQuestions.filter(
+            q => q.category === selectedCategory
+          );
+
+      }
+
+
+      // إذا انتهت الأسئلة
+      if (availableQuestions.length === 0) {
+
+        usedQuestionIds =
+          usedQuestionIds.filter(id => {
+
+            const q =
+              questionsBank.find(
+                item => item.id === id
+              );
+
+            return selectedCategory !== 'الكل' &&
+                   q
+              ? q.category !== selectedCategory
+              : false;
+
+          });
+
+
+        availableQuestions =
+          questionsBank.filter(
+            q =>
+              selectedCategory === 'الكل' ||
+              q.category === selectedCategory
+          );
+
+      }
+
+
+      // اختيار سؤال عشوائي
+      const selectedQuestion =
+        availableQuestions[
+          Math.floor(
+            Math.random() *
+            availableQuestions.length
+          )
+        ];
+
+
+      usedQuestionIds.push(
+        selectedQuestion.id
+      );
+
+
+      // مسح إجابات الجولة السابقة
       db.ref('games/answers').remove();
 
-      // 3. تحديث البيانات والسؤال الجديد في Firebase
-      db.ref('games/gameState').update({
-        roundId: currentRoundId + 1,
-        currentQuestion: randomQ.question,
-        category: randomQ.category,
-        validAnswers: randomQ.answers,
-        status: 'started',
-        winner: ''
+
+      // تحديث Firebase
+      db.ref('games/gameState').set({
+
+        roundId:
+          currentRoundId + 1,
+
+        currentQuestion:
+          selectedQuestion.question,
+
+        category:
+          selectedQuestion.category,
+
+        letter:
+          selectedQuestion.letter || null,
+
+        validAnswers:
+          selectedQuestion.answers,
+
+        status:
+          'started',
+
+        winner:
+          '',
+
+        duration:
+          60
+
       }).then(() => {
-        document.getElementById('result-overlay').classList.remove('active');
+
+        document
+          .getElementById('result-overlay')
+          .classList.remove('active');
+
         startLocalTimer(60);
+
       });
+
     }
+
+
+    // =========================================================
+    // ⏱️ المؤقت
+    // =========================================================
 
     function startLocalTimer(duration) {
+
       isGameRunning = true;
+
       timerSeconds = duration;
+
       clearInterval(timerInterval);
 
-      timerInterval = setInterval(() => {
-        timerSeconds--;
-        
-        const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-        const secs = (timerSeconds % 60).toString().padStart(2, '0');
-        document.getElementById('timer-display').innerText = `${mins}:${secs}`;
 
-        if (timerSeconds <= 0) {
-          stopTimer();
-          db.ref('games/gameState').update({
-            status: 'finished',
-            winner: '⏰ انتهى الوقت!'
-          });
-        }
-      }, 1000);
+      // عرض البداية فورًا
+      const mins =
+        Math.floor(
+          timerSeconds / 60
+        )
+        .toString()
+        .padStart(2, '0');
+
+      const secs =
+        (timerSeconds % 60)
+        .toString()
+        .padStart(2, '0');
+
+      document.getElementById(
+        'timer-display'
+      ).innerText =
+        `${mins}:${secs}`;
+
+
+      timerInterval =
+        setInterval(() => {
+
+          timerSeconds--;
+
+
+          const mins =
+            Math.floor(
+              timerSeconds / 60
+            )
+            .toString()
+            .padStart(2, '0');
+
+
+          const secs =
+            (timerSeconds % 60)
+            .toString()
+            .padStart(2, '0');
+
+
+          document.getElementById(
+            'timer-display'
+          ).innerText =
+            `${mins}:${secs}`;
+
+
+          if (timerSeconds <= 0) {
+
+            stopTimer();
+
+
+            db.ref('games/gameState').update({
+
+              status:
+                'finished',
+
+              winner:
+                '⏰ انتهى الوقت!'
+
+            });
+
+          }
+
+        }, 1000);
+
     }
+
+
+    // =========================================================
+    // 🛑 إيقاف المؤقت
+    // =========================================================
 
     function stopTimer() {
+
       isGameRunning = false;
+
       clearInterval(timerInterval);
+
     }
+
   </script>
+
 </body>
 </html>
