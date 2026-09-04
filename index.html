@@ -132,7 +132,7 @@
 
   <div class="question-card">
     <span class="category-badge" id="category-display">معلومات عامة</span>
-    <div class="question-text" id="question-display">بانتظار بدء الجولة...</div>
+    <div class="question-text" id="question-display">بانتظار تحميل السؤال...</div>
   </div>
 
   <div class="arena-container">
@@ -172,8 +172,31 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const validAnswers = ["الشهادتين", "شهادة ان لا اله الا الله", "الصلاة", "إقام الصلاة", "الزكاة", "إيتاء الزكاة", "الصوم", "صوم رمضان", "الحج", "حج البيت"];
+    // 📚 بنك الأسئلة المتنوعة (يمكنك إضافة أي أسئلة وإجابات جديدة هنا)
+    const questionsBank = [
+      {
+        category: "معلومات إسلامية",
+        question: "اذكر 5 من أركان الإسلام؟",
+        answers: ["الشهادتين", "الصلاة", "الزكاة", "الصوم", "الحج", "إقام الصلاة", "إيتاء الزكاة", "صوم رمضان", "حج البيت"]
+      },
+      {
+        category: "جغرافيا وتاريخ",
+        question: "اذكر 5 من دول الخليج العربي؟",
+        answers: ["السعودية", "الكويت", "القطر", "الإمارات", "البحرين", "عمان", "قطر"]
+      },
+      {
+        category: "علوم وطبيعة",
+        question: "اذكر 5 من حواس الإنسان أو أعضاء الجسم الأساسية؟",
+        answers: ["السمع", "البصر", "اللمس", "التذوق", "الشم", "القلب", "العين", "الأذن", "الجلد"]
+      },
+      {
+        category: "لغة عربية",
+        question: "اذكر 5 من الصلوات الخمس المكتوبة؟",
+        answers: ["الفجر", "الظهر", "العصر", "المغرب", "العشاء", "الصبح"]
+      }
+    ];
 
+    let currentValidAnswers = [];
     let timerSeconds = 60;
     let timerInterval = null;
     let isGameRunning = false;
@@ -192,9 +215,16 @@
       if (!data) return;
 
       currentRoundId = data.roundId || 1;
-      document.getElementById('question-display').innerText = data.currentQuestion || "اذكر 5 من أركان الإسلام؟";
-      document.getElementById('category-display').innerText = data.category || "معلومات عامة";
+      document.getElementById('question-display').innerText = data.currentQuestion || "بانتظار السؤال...";
+      document.getElementById('category-display').innerText = data.category || "عام";
       document.getElementById('round-title').innerText = `الجولة ${currentRoundId}`;
+
+      // تعيين الكلمات الصحيحة الخاصة بالسؤال الحالي
+      if (data.validAnswers) {
+        currentValidAnswers = data.validAnswers;
+      } else {
+        currentValidAnswers = questionsBank[0].answers;
+      }
 
       if (data.status === 'started') {
         document.getElementById('result-overlay').classList.remove('active');
@@ -208,12 +238,11 @@
       }
     });
 
-    // استماع إجابات الفريق (أ)
+    // استماع إجابات الفرق
     db.ref('games/answers/teamA').on('value', (snapshot) => {
       processAnswers('A', snapshot.val() ? Object.values(snapshot.val()) : []);
     });
 
-    // استماع إجابات الفريق (ب)
     db.ref('games/answers/teamB').on('value', (snapshot) => {
       processAnswers('B', snapshot.val() ? Object.values(snapshot.val()) : []);
     });
@@ -228,7 +257,7 @@
       answers.forEach((ans, idx) => {
         const item = document.createElement('div');
         const cleanText = ans.text.trim();
-        const isCorrect = validAnswers.some(v => cleanText.includes(v));
+        const isCorrect = currentValidAnswers.some(v => cleanText.includes(v));
 
         if (isCorrect) {
           correctCount++;
@@ -254,14 +283,20 @@
       }
     }
 
-    // دالة الانتقال للجولة التالية
+    // دالة الانتقال للـجولة التالية واختيار سؤال جديد تلقائياً
     function startNextRound() {
-      // 1. مسح الإجابات القديمة
+      // 1. اختيار سؤال جديد عشوائي من بنك الأسئلة
+      const randomQ = questionsBank[Math.floor(Math.random() * questionsBank.length)];
+
+      // 2. مسح الإجابات القديمة
       db.ref('games/answers').remove();
 
-      // 2. تحديث حالة اللعبة ورقم الجولة الجديدة
+      // 3. تحديث البيانات والسؤال الجديد في Firebase
       db.ref('games/gameState').update({
         roundId: currentRoundId + 1,
+        currentQuestion: randomQ.question,
+        category: randomQ.category,
+        validAnswers: randomQ.answers,
         status: 'started',
         winner: ''
       }).then(() => {
