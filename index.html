@@ -3,23 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ تحدي السرعة - الشاشة الرئيسية</title>
-
+  <title>لعبة التحدي والتنافس</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --card-bg: #1e293b;
-      --blue-team: #3b82f6;
-      --red-team: #ef4444;
-      --accent: #f59e0b;
-      --text-white: #f8fafc;
-      --green-win: #10b981;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --team-a-color: #3b82f6;
+      --team-a-bg: rgba(59, 130, 246, 0.15);
+      --team-b-color: #ef4444;
+      --team-b-bg: rgba(239, 68, 68, 0.15);
+      --accent-color: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
     }
 
     * {
@@ -30,3837 +35,600 @@
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-white);
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
       padding: 20px;
-      text-align: center;
+      overflow-x: hidden;
     }
 
-    .header-bar {
+    header {
+      width: 100%;
+      max-width: 1200px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 15px 25px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
       margin-bottom: 20px;
     }
 
-    .round-title {
-      font-size: 2rem;
+    .brand-title {
+      font-size: 1.8rem;
       font-weight: 900;
-      color: var(--accent);
+      color: var(--accent-color);
     }
 
-    .timer-container {
-      background: var(--card-bg);
-      border: 3px solid var(--accent);
-      padding: 10px 30px;
-      border-radius: 20px;
-      font-size: 2.5rem;
-      font-weight: 900;
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
-      transition: all 0.2s ease;
+    .header-controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
     }
 
-    .timer-warning {
-      border-color: var(--red-team);
-      color: var(--red-team);
-      animation: timerPulse 0.8s infinite;
+    .mute-btn {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-size: 1.2rem;
+      padding: 8px 15px;
+      border-radius: 12px;
+      cursor: pointer;
     }
 
-    @keyframes timerPulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.05);
-      }
-    }
-
-    .question-card {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .category-badge {
-      background: var(--accent);
-      color: #000;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-weight: 900;
-      display: inline-block;
-      margin-bottom: 10px;
-    }
-
-    .question-text {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #fff;
-    }
-
-    .arena-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .scoreboard-summary {
+      display: flex;
       gap: 20px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .score-badge {
+      padding: 6px 16px;
+      border-radius: 50px;
+    }
+
+    .score-badge.team-a {
+      background: var(--team-a-bg);
+      color: var(--team-a-color);
+      border: 1px solid var(--team-a-color);
+    }
+
+    .score-badge.team-b {
+      background: var(--team-b-bg);
+      color: var(--team-b-color);
+      border: 1px solid var(--team-b-color);
+    }
+
+    .categories-bar {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cat-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 10px 20px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+
+    .cat-btn:hover, .cat-btn.selected {
+      background: var(--accent-color);
+      color: #000;
+      border-color: var(--accent-color);
+    }
+
+    main {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: 20px;
+      flex-grow: 1;
+    }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
     }
 
     .team-card {
       background: var(--card-bg);
-      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
       padding: 20px;
-      border: 2px solid transparent;
       display: flex;
       flex-direction: column;
-    }
-
-    .team-card.team-a {
-      border-color: var(--blue-team);
-    }
-
-    .team-card.team-b {
-      border-color: var(--red-team);
-    }
-
-    .team-header {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding-bottom: 15px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+    }
+
+    .team-card.team-a { border-top: 5px solid var(--team-a-color); }
+    .team-card.team-b { border-top: 5px solid var(--team-b-color); }
+
+    .team-title {
+      font-size: 1.5rem;
+      font-weight: 900;
       margin-bottom: 15px;
     }
 
-    .team-name {
-      font-size: 1.8rem;
-      font-weight: 900;
-    }
+    .team-card.team-a .team-title { color: var(--team-a-color); }
+    .team-card.team-b .team-title { color: var(--team-b-color); }
 
-    .team-counter {
-      font-size: 1.2rem;
-      background: rgba(255,255,255,0.1);
-      padding: 5px 15px;
-      border-radius: 12px;
-    }
-
-    .qr-box {
+    .qr-container {
       background: #fff;
       padding: 10px;
       border-radius: 12px;
-      display: inline-block;
-      margin: 0 auto 15px auto;
+      margin-bottom: 15px;
     }
 
-    .qr-title {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-bottom: 5px;
-      font-weight: bold;
+    .answers-count {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 15px;
     }
 
     .answers-list {
+      width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      min-height: 200px;
-      flex-grow: 1;
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
     }
 
     .answer-item {
-      padding: 12px 20px;
-      border-radius: 12px;
-      text-align: right;
-      font-size: 1.2rem;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .answer-item.correct {
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid #10b981;
-      color: #10b981;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid #22c55e;
+      color: #4ade80;
     }
 
     .answer-item.wrong {
       background: rgba(239, 68, 68, 0.2);
       border: 1px solid #ef4444;
-      color: #ef4444;
+      color: #fca5a5;
     }
 
-    .result-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
+    .center-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .question-card {
       width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.95);
-      display: none;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 30px;
+      text-align: center;
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 999;
-      padding: 20px;
+      min-height: 250px;
+      position: relative;
     }
 
-    .result-overlay.active {
-      display: flex;
-    }
-
-    .winner-title {
-      font-size: 3rem;
+    .round-badge {
+      position: absolute;
+      top: -15px;
+      background: var(--accent-color);
+      color: #000;
+      padding: 5px 20px;
+      border-radius: 20px;
       font-weight: 900;
-      color: var(--green-win);
+    }
+
+    .category-tag {
+      color: var(--text-muted);
+      font-size: 1rem;
       margin-bottom: 10px;
     }
 
-    .category-selection {
-      margin-top: 20px;
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.2);
-      max-width: 600px;
-      width: 100%;
+    .question-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1.5;
     }
 
-    .category-title {
-      font-size: 1.3rem;
-      font-weight: 900;
-      margin-bottom: 15px;
-      color: var(--accent);
-    }
-
-    .category-buttons {
+    .timer-container {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
     }
 
-    .cat-btn {
-      background: #334155;
+    .timer-display {
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 40px;
+      border-radius: 20px;
+      border: 2px solid var(--card-border);
+    }
+
+    .timer-warning {
+      color: #ef4444;
+      border-color: #ef4444;
+      animation: pulse 1s infinite;
+    }
+
+    .start-btn {
+      background: linear-gradient(45deg, #10b981, #059669);
       color: #fff;
-      border: 2px solid transparent;
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .cat-btn:hover,
-    .cat-btn.selected {
-      background: var(--accent);
-      color: #000;
-      border-color: #fff;
-    }
-
-    .btn-next-round {
-      margin-top: 25px;
-      background: var(--accent);
-      color: #000;
       border: none;
       padding: 15px 40px;
-      font-size: 1.4rem;
-      font-weight: 900;
-      border-radius: 15px;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
-      transition: transform 0.2s ease;
-    }
-
-    .btn-next-round:hover {
-      transform: scale(1.05);
-    }
-
-    .score-board {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .score-box {
-      background: var(--card-bg);
-      padding: 8px 20px;
-      border-radius: 15px;
-      font-weight: 900;
-      font-size: 1.1rem;
-    }
-
-    .score-a {
-      border: 2px solid var(--blue-team);
-    }
-
-    .score-b {
-      border: 2px solid var(--red-team);
-    }
-
-    .final-score {
-      margin-top: 15px;
-      background: rgba(255,255,255,0.08);
-      padding: 15px;
-      border-radius: 15px;
       font-size: 1.3rem;
       font-weight: 900;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
     }
 
-    .mute-button {
+    .overlay {
       position: fixed;
-      bottom: 15px;
-      left: 15px;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(15px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       z-index: 1000;
-      border: none;
-      background: var(--card-bg);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      font-size: 1.3rem;
-      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
     }
 
-    @media (max-width: 700px) {
+    .overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
 
-      .arena-container {
-        grid-template-columns: 1fr;
-      }
+    .result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 40px 60px;
+      border-radius: 30px;
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+    }
 
-      .question-text {
-        font-size: 1.5rem;
-      }
+    .result-title {
+      font-size: 2.5rem;
+      color: var(--accent-color);
+      margin-bottom: 20px;
+      font-weight: 900;
+    }
 
-      .round-title {
-        font-size: 1.5rem;
-      }
+    .result-scores {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+      line-height: 1.8;
+    }
 
-      .timer-container {
-        font-size: 2rem;
-        padding: 8px 18px;
-      }
-
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
-
 <body>
 
-  <div class="header-bar">
-
-    <div class="round-title" id="round-title">
-      الجولة 1
+  <header>
+    <div class="brand-title">🎮 تحدي المجموعات</div>
+    <div class="scoreboard-summary">
+      <div class="score-badge team-a" id="score-team-a">🔵 الفريق أ: 0 نقطة</div>
+      <div class="score-badge team-b" id="score-team-b">🔴 الفريق ب: 0 نقطة</div>
     </div>
-
-    <div class="timer-container" id="timer-display">
-      01:00
+    <div class="header-controls">
+      <button class="mute-btn" id="mute-button" onclick="toggleMute()">🔊</button>
     </div>
+  </header>
 
+  <div class="categories-bar">
+    <button class="cat-btn selected" onclick="selectCategory('الكل', this)">الكل</button>
+    <button class="cat-btn" onclick="selectCategory('أمن سيبراني', this)">أمن سيبراني</button>
+    <button class="cat-btn" onclick="selectCategory('شبكات', this)">شبكات</button>
+    <button class="cat-btn" onclick="selectCategory('ثقافة عامة', this)">ثقافة عامة</button>
   </div>
 
-  <div class="score-board">
-
-    <div class="score-box score-a" id="score-team-a">
-      🔵 الفريق أ: 0 نقطة
-    </div>
-
-    <div class="score-box score-b" id="score-team-b">
-      🔴 الفريق ب: 0 نقطة
-    </div>
-
-  </div>
-
-  <div class="question-card">
-
-    <span class="category-badge" id="category-display">
-      القسم
-    </span>
-
-    <div class="question-text" id="question-display">
-      اضغط على بدء اللعبة للبدء...
-    </div>
-
-  </div>
-
-  <div class="arena-container">
-
+  <main>
     <div class="team-card team-a">
-
-      <div class="team-header">
-
-        <div class="team-name" style="color: var(--blue-team);">
-          الفريق أ
-        </div>
-
-        <div class="team-counter" id="count-team-a">
-          0 / 5
-        </div>
-
-      </div>
-
-      <div class="qr-title">
-        امسح للولوج كـ (الفريق أ)
-      </div>
-
-      <div class="qr-box">
-        <div id="qrcode-team-a"></div>
-      </div>
-
+      <div class="team-title">الفريق (أ)</div>
+      <div class="qr-container" id="qrcode-team-a"></div>
+      <div class="answers-count" id="count-team-a">0 / 5</div>
       <div class="answers-list" id="list-team-a"></div>
+    </div>
 
+    <div class="center-panel">
+      <div class="question-card">
+        <div class="round-badge" id="round-title">الجولة 1</div>
+        <div class="category-tag" id="category-display">اضغط "بدء الجولة" للبدء</div>
+        <div class="question-text" id="question-display">جاهز للتحدي؟</div>
+      </div>
+
+      <div class="timer-container">
+        <div class="timer-display" id="timer-display">01:00</div>
+        <button class="start-btn" onclick="startNextRound()">بدء الجولة 🚀</button>
+      </div>
     </div>
 
     <div class="team-card team-b">
-
-      <div class="team-header">
-
-        <div class="team-name" style="color: var(--red-team);">
-          الفريق ب
-        </div>
-
-        <div class="team-counter" id="count-team-b">
-          0 / 5
-        </div>
-
-      </div>
-
-      <div class="qr-title">
-        امسح للولوج كـ (الفريق ب)
-      </div>
-
-      <div class="qr-box">
-        <div id="qrcode-team-b"></div>
-      </div>
-
+      <div class="team-title">الفريق (ب)</div>
+      <div class="qr-container" id="qrcode-team-b"></div>
+      <div class="answers-count" id="count-team-b">0 / 5</div>
       <div class="answers-list" id="list-team-b"></div>
-
     </div>
+  </main>
 
+  <div class="overlay" id="result-overlay">
+    <div class="result-card">
+      <div class="result-title" id="winner-title-header">🏆 انتهت الجولة!</div>
+      <div class="result-scores" id="final-score">
+        🔵 الفريق أ: 0
+        <br>
+        🔴 الفريق ب: 0
+      </div>
+      <div id="winner-text" style="margin-bottom: 20px; font-size: 1.2rem; color: var(--text-muted);"></div>
+      <button class="start-btn" onclick="startNextRound()">الجولة التالية ⏩</button>
+    </div>
   </div>
 
-  <div class="result-overlay active" id="result-overlay">
-
-    <div class="winner-title" id="winner-title-header">
-      🎮 مرحباً بكم في تحدي السرعة
-    </div>
-
-    <div style="font-size: 1.8rem;" id="winner-text">
-      اختر القسم وابدأ الجولة الأولى!
-    </div>
-
-    <div class="final-score" id="final-score">
-      🔵 الفريق أ: 0 نقطة
-      <br>
-      🔴 الفريق ب: 0 نقطة
-    </div>
-
-    <div class="category-selection">
-
-      <div class="category-title">
-        اختر قسم الجولة القادمة:
-      </div>
-
-      <div class="category-buttons" id="category-buttons-container">
-
-        <button class="cat-btn selected" onclick="selectCategory('الكل')">
-          🎲 عشوائي (شامل)
-        </button>
-
-        <button class="cat-btn" onclick="selectCategory('ديني')">
-          🕋 ديني
-        </button>
-
-        <button class="cat-btn" onclick="selectCategory('علمي')">
-          🔬 علمي وطبيعة
-        </button>
-
-        <button class="cat-btn" onclick="selectCategory('جغرافيا')">
-          🗺️ جغرافيا
-        </button>
-
-        <button class="cat-btn" onclick="selectCategory('تاريخ')">
-          📜 تاريخ
-        </button>
-
-        <button class="cat-btn" onclick="selectCategory('حروف')">
-          🔤 تحدي الحروف
-        </button>
-
-      </div>
-
-    </div>
-
-    <button class="btn-next-round" onclick="startNextRound()">
-      🚀 بدء الجولة الآن
-    </button>
-
-  </div>
-
-  <button class="mute-button" id="mute-button" onclick="toggleMute()">
-    🔊
-  </button>
-
-
-<script>
-
-// =========================================================
-// 🔥 FIREBASE — لا تغيّر هذه الإعدادات
-// =========================================================
-
-const firebaseConfig = {
-  databaseURL:
-    "https://speed-game-reem-default-rtdb.firebaseio.com/",
-  projectId:
-    "speed-game-reem"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.database();
-
-
-// =========================================================
-// 📚 بنك الأسئلة
-// =========================================================
-
-const questionsBank = [
-
-  // =========================
-  // 🕋 ديني
-  // =========================
-
-  {
-    id:101,
-    category:"ديني",
-    question:"اذكر 5 من أركان الإسلام؟",
-    answers:[
-      "الشهادتين",
-      "الصلاة",
-      "الزكاة",
-      "الصوم",
-      "الحج"
-    ]
-  },
-
-  {
-    id:102,
-    category:"ديني",
-    question:"اذكر 5 من أركان الإيمان؟",
-    answers:[
-      "الله",
-      "الملائكة",
-      "الكتب",
-      "الرسل",
-      "اليوم الآخر",
-      "القدر"
-    ]
-  },
-
-  {
-    id:103,
-    category:"ديني",
-    question:"اذكر 5 من أسماء سور القرآن التي تبدأ بحرف الميم؟",
-    answers:[
-      "مريم",
-      "المؤمنون",
-      "المنافقون",
-      "الملك",
-      "المدثر",
-      "المزمل",
-      "المعارج",
-      "المطففين"
-    ]
-  },
-
-  {
-    id:104,
-    category:"ديني",
-    question:"اذكر 5 من أسماء الأنبياء المذكورين في القرآن؟",
-    answers:[
-      "آدم",
-      "نوح",
-      "إبراهيم",
-      "موسى",
-      "عيسى",
-      "محمد",
-      "يوسف",
-      "يونس",
-      "أيوب",
-      "زكريا",
-      "يحيى",
-      "إسماعيل",
-      "إسحاق",
-      "يعقوب",
-      "داود"
-    ]
-  },
-
-  {
-    id:105,
-    category:"ديني",
-    question:"اذكر 5 من أسماء زوجات النبي ﷺ؟",
-    answers:[
-      "خديجة",
-      "سودة",
-      "عائشة",
-      "حفصة",
-      "زينب",
-      "أم سلمة",
-      "صفية",
-      "ميمونة",
-      "جويرية",
-      "مارية"
-    ]
-  },
-
-  {
-    id:106,
-    category:"ديني",
-    question:"اذكر 5 من سور القرآن القصيرة؟",
-    answers:[
-      "الإخلاص",
-      "الفلق",
-      "الناس",
-      "الكوثر",
-      "العصر",
-      "النصر",
-      "المسد",
-      "قريش",
-      "الفيل"
-    ]
-  },
-
-  {
-    id:107,
-    category:"ديني",
-    question:"اذكر 5 من الصلوات المفروضة؟",
-    answers:[
-      "الفجر",
-      "الظهر",
-      "العصر",
-      "المغرب",
-      "العشاء"
-    ]
-  },
-
-  {
-    id:108,
-    category:"ديني",
-    question:"اذكر 5 من أسماء يوم القيامة الواردة في القرآن؟",
-    answers:[
-      "القيامة",
-      "الساعة",
-      "الحاقة",
-      "القارعة",
-      "الغاشية",
-      "الواقعة",
-      "الآزفة",
-      "يوم الدين"
-    ]
-  },
-
-  {
-    id:109,
-    category:"ديني",
-    question:"اذكر 5 من أسماء الملائكة؟",
-    answers:[
-      "جبريل",
-      "ميكائيل",
-      "إسرافيل",
-      "ملك الموت",
-      "مالك"
-    ]
-  },
-
-  {
-    id:110,
-    category:"ديني",
-    question:"اذكر 5 من أشهر المساجد في الإسلام؟",
-    answers:[
-      "المسجد الحرام",
-      "المسجد النبوي",
-      "المسجد الأقصى",
-      "مسجد قباء",
-      "مسجد القبلتين",
-      "المسجد الأموي"
-    ]
-  },
-
-  {
-    id:111,
-    category:"ديني",
-    question:"اذكر 5 من أشهر الغزوات؟",
-    answers:[
-      "بدر",
-      "أحد",
-      "الخندق",
-      "خيبر",
-      "حنين",
-      "تبوك"
-    ]
-  },
-
-  {
-    id:112,
-    category:"ديني",
-    question:"اذكر 5 من الأشهر الهجرية؟",
-    answers:[
-      "محرم",
-      "صفر",
-      "ربيع الأول",
-      "ربيع الآخر",
-      "جمادى الأولى",
-      "رجب",
-      "شعبان",
-      "رمضان",
-      "شوال",
-      "ذو القعدة",
-      "ذو الحجة"
-    ]
-  },
-
-  {
-    id:113,
-    category:"ديني",
-    question:"اذكر 5 من الأعمال التي يفعلها المسلم في رمضان؟",
-    answers:[
-      "الصيام",
-      "الصلاة",
-      "الصدقة",
-      "قراءة القرآن",
-      "الدعاء",
-      "الذكر",
-      "قيام الليل",
-      "الاعتكاف"
-    ]
-  },
-
-  {
-    id:114,
-    category:"ديني",
-    question:"اذكر 5 من أسماء الصحابة المشهورين؟",
-    answers:[
-      "أبو بكر",
-      "عمر",
-      "عثمان",
-      "علي",
-      "بلال",
-      "خالد",
-      "سلمان",
-      "أبو هريرة",
-      "ابن عباس"
-    ]
-  },
-
-  {
-    id:115,
-    category:"ديني",
-    question:"اذكر 5 من الكتب السماوية التي ورد ذكرها؟",
-    answers:[
-      "القرآن",
-      "التوراة",
-      "الإنجيل",
-      "الزبور",
-      "صحف إبراهيم"
-    ]
-  },
-
-  {
-    id:116,
-    category:"ديني",
-    question:"اذكر 5 من سور القرآن التي تبدأ بحرف القاف؟",
-    answers:[
-      "ق",
-      "القصص",
-      "القمر",
-      "القيامة",
-      "القلم",
-      "القارعة",
-      "القدر"
-    ]
-  },
-
-  {
-    id:117,
-    category:"ديني",
-    question:"اذكر 5 من أسماء أبواب الجنة؟",
-    answers:[
-      "باب الصلاة",
-      "باب الريان",
-      "باب الصدقة",
-      "باب الجهاد",
-      "باب الحج",
-      "باب الإيمان"
-    ]
-  },
-
-  {
-    id:118,
-    category:"ديني",
-    question:"اذكر 5 من الأنبياء العرب؟",
-    answers:[
-      "محمد",
-      "هود",
-      "صالح",
-      "شعيب",
-      "إسماعيل"
-    ]
-  },
-
-  {
-    id:119,
-    category:"ديني",
-    question:"اذكر 5 من أنواع الصدقة أو أعمال البر؟",
-    answers:[
-      "المال",
-      "الطعام",
-      "الماء",
-      "الكلمة الطيبة",
-      "مساعدة المحتاج",
-      "إطعام الفقير",
-      "كفالة اليتيم"
-    ]
-  },
-
-  {
-    id:120,
-    category:"ديني",
-    question:"اذكر 5 من السور التي تبدأ بكلمة الحمد؟",
-    answers:[
-      "الفاتحة",
-      "الأنعام",
-      "الكهف",
-      "سبأ",
-      "فاطر"
-    ]
-  },
-
-
-  // =========================
-  // 🔬 علمي
-  // =========================
-
-  {
-    id:201,
-    category:"علمي",
-    question:"اذكر 5 من حواس الإنسان أو أعضاء الجسم؟",
-    answers:[
-      "السمع",
-      "البصر",
-      "اللمس",
-      "التذوق",
-      "الشم",
-      "القلب",
-      "العين",
-      "الأذن",
-      "الجلد",
-      "الرئة"
-    ]
-  },
-
-  {
-    id:202,
-    category:"علمي",
-    question:"اذكر 5 من كواكب المجموعة الشمسية؟",
-    answers:[
-      "الأرض",
-      "المريخ",
-      "المشتري",
-      "زحل",
-      "عطارد",
-      "الزهرة",
-      "أورانوس",
-      "نبتون"
-    ]
-  },
-
-  {
-    id:203,
-    category:"علمي",
-    question:"اذكر 5 أشكال هندسية؟",
-    answers:[
-      "مربع",
-      "مستطيل",
-      "مثلث",
-      "دائرة",
-      "معين",
-      "خماسي",
-      "سداسي",
-      "بيضاوي"
-    ]
-  },
-
-  {
-    id:204,
-    category:"علمي",
-    question:"اذكر 5 من مصادر الطاقة؟",
-    answers:[
-      "الشمس",
-      "الرياح",
-      "الماء",
-      "النفط",
-      "الغاز",
-      "الفحم",
-      "النووي"
-    ]
-  },
-
-  {
-    id:205,
-    category:"علمي",
-    question:"اذكر 5 من الحيوانات التي تعيش في الماء؟",
-    answers:[
-      "سمك",
-      "حوت",
-      "دلفين",
-      "قرش",
-      "أخطبوط",
-      "حبار",
-      "سلحفاة",
-      "فقمة"
-    ]
-  },
-
-  {
-    id:206,
-    category:"علمي",
-    question:"اذكر 5 من الحيوانات التي تطير؟",
-    answers:[
-      "نسر",
-      "صقر",
-      "حمامة",
-      "عصفور",
-      "بومة",
-      "غراب",
-      "فراشة",
-      "نحلة",
-      "خفاش"
-    ]
-  },
-
-  {
-    id:207,
-    category:"علمي",
-    question:"اذكر 5 من أجزاء النبات؟",
-    answers:[
-      "الجذر",
-      "الساق",
-      "الورقة",
-      "الزهرة",
-      "الثمرة",
-      "البذرة"
-    ]
-  },
-
-  {
-    id:208,
-    category:"علمي",
-    question:"اذكر 5 من المعادن؟",
-    answers:[
-      "الذهب",
-      "الفضة",
-      "الحديد",
-      "النحاس",
-      "الألمنيوم",
-      "الزنك",
-      "النيكل"
-    ]
-  },
-
-  {
-    id:209,
-    category:"علمي",
-    question:"اذكر 4 من حالات المادة؟",
-    answers:[
-      "صلبة",
-      "سائلة",
-      "غازية",
-      "بلازما"
-    ]
-  },
-
-  {
-    id:210,
-    category:"علمي",
-    question:"اذكر 5 من أعضاء جسم الإنسان؟",
-    answers:[
-      "القلب",
-      "الكبد",
-      "الرئة",
-      "المعدة",
-      "الدماغ",
-      "الكلى",
-      "العين",
-      "الأذن"
-    ]
-  },
-
-  {
-    id:211,
-    category:"علمي",
-    question:"اذكر 5 من الحشرات؟",
-    answers:[
-      "نملة",
-      "نحلة",
-      "فراشة",
-      "ذبابة",
-      "بعوضة",
-      "جرادة",
-      "خنفساء",
-      "صرصور"
-    ]
-  },
-
-  {
-    id:212,
-    category:"علمي",
-    question:"اذكر 5 من الكائنات التي تعيش في الصحراء؟",
-    answers:[
-      "جمل",
-      "عقرب",
-      "ثعلب",
-      "أرنب",
-      "سحلية",
-      "حية",
-      "يربوع"
-    ]
-  },
-
-  {
-    id:213,
-    category:"علمي",
-    question:"اذكر 5 من أنواع الفواكه؟",
-    answers:[
-      "تفاح",
-      "برتقال",
-      "بطيخ",
-      "عنب",
-      "مانجو",
-      "رمان",
-      "خوخ",
-      "مشمش"
-    ]
-  },
-
-  {
-    id:214,
-    category:"علمي",
-    question:"اذكر 5 من الحواس أو وظائفها؟",
-    answers:[
-      "النظر",
-      "السمع",
-      "الشم",
-      "التذوق",
-      "اللمس"
-    ]
-  },
-
-  {
-    id:215,
-    category:"علمي",
-    question:"اذكر 5 من الظواهر الطبيعية؟",
-    answers:[
-      "المطر",
-      "البرق",
-      "الرعد",
-      "الزلازل",
-      "البراكين",
-      "الكسوف",
-      "الخسوف",
-      "قوس قزح"
-    ]
-  },
-
-  {
-    id:216,
-    category:"علمي",
-    question:"اذكر 5 من الأجهزة التي تعمل بالكهرباء؟",
-    answers:[
-      "تلفاز",
-      "ثلاجة",
-      "غسالة",
-      "حاسوب",
-      "هاتف",
-      "مكيف",
-      "فرن",
-      "مروحة"
-    ]
-  },
-
-  {
-    id:217,
-    category:"علمي",
-    question:"اذكر 5 من مصادر الضوء؟",
-    answers:[
-      "الشمس",
-      "المصباح",
-      "النار",
-      "البرق",
-      "النجوم",
-      "الشمعة"
-    ]
-  },
-
-  {
-    id:218,
-    category:"علمي",
-    question:"اذكر 5 من أنواع الصخور؟",
-    answers:[
-      "الجرانيت",
-      "الرخام",
-      "البازلت",
-      "الحجر الجيري",
-      "الحجر الرملي",
-      "الشيست"
-    ]
-  },
-
-  {
-    id:219,
-    category:"علمي",
-    question:"اذكر 5 من الحيوانات الثديية؟",
-    answers:[
-      "أسد",
-      "فيل",
-      "حصان",
-      "قطة",
-      "كلب",
-      "حوت",
-      "دلفين",
-      "جمل",
-      "قرد"
-    ]
-  },
-
-  {
-    id:220,
-    category:"علمي",
-    question:"اذكر 5 من أجزاء الجهاز الهضمي؟",
-    answers:[
-      "الفم",
-      "المريء",
-      "المعدة",
-      "الأمعاء",
-      "الكبد",
-      "البنكرياس",
-      "القولون"
-    ]
-  },
-
-
-  // =========================
-  // 🗺️ جغرافيا
-  // =========================
-
-  {
-    id:301,
-    category:"جغرافيا",
-    question:"اذكر 5 من دول الخليج العربي؟",
-    answers:[
-      "السعودية",
-      "الكويت",
-      "قطر",
-      "الإمارات",
-      "البحرين",
-      "عمان"
-    ]
-  },
-
-  {
-    id:302,
-    category:"جغرافيا",
-    question:"اذكر 5 عواصم عربية؟",
-    answers:[
-      "الرياض",
-      "القاهرة",
-      "أبوظبي",
-      "الدوحة",
-      "الكويت",
-      "عمان",
-      "الرباط",
-      "بغداد",
-      "دمشق"
-    ]
-  },
-
-  {
-    id:303,
-    category:"جغرافيا",
-    question:"اذكر 5 دول تبدأ بحرف الألف؟",
-    answers:[
-      "الإمارات",
-      "الأردن",
-      "الجزائر",
-      "ألمانيا",
-      "أمريكا",
-      "إسبانيا",
-      "أستراليا",
-      "إيطاليا"
-    ]
-  },
-
-  {
-    id:304,
-    category:"جغرافيا",
-    question:"اذكر 5 مدن سعودية؟",
-    answers:[
-      "الرياض",
-      "جدة",
-      "الدمام",
-      "مكة",
-      "المدينة",
-      "الخبر",
-      "الطائف",
-      "أبها",
-      "تبوك",
-      "حائل"
-    ]
-  },
-
-  {
-    id:305,
-    category:"جغرافيا",
-    question:"اذكر 5 دول عربية في قارة أفريقيا؟",
-    answers:[
-      "مصر",
-      "السودان",
-      "الجزائر",
-      "المغرب",
-      "تونس",
-      "ليبيا",
-      "موريتانيا",
-      "الصومال"
-    ]
-  },
-
-  {
-    id:306,
-    category:"جغرافيا",
-    question:"اذكر 5 دول في قارة آسيا؟",
-    answers:[
-      "السعودية",
-      "اليابان",
-      "الصين",
-      "الهند",
-      "كوريا",
-      "إندونيسيا",
-      "تايلاند",
-      "العراق"
-    ]
-  },
-
-  {
-    id:307,
-    category:"جغرافيا",
-    question:"اذكر 5 دول أوروبية؟",
-    answers:[
-      "فرنسا",
-      "ألمانيا",
-      "إيطاليا",
-      "إسبانيا",
-      "بريطانيا",
-      "البرتغال",
-      "هولندا",
-      "سويسرا"
-    ]
-  },
-
-  {
-    id:308,
-    category:"جغرافيا",
-    question:"اذكر 5 دول تبدأ بحرف الميم؟",
-    answers:[
-      "مصر",
-      "ماليزيا",
-      "مالي",
-      "مالطا",
-      "مدغشقر",
-      "المغرب",
-      "موزمبيق",
-      "موريتانيا"
-    ]
-  },
-
-  {
-    id:309,
-    category:"جغرافيا",
-    question:"اذكر 5 بحار أو محيطات؟",
-    answers:[
-      "البحر الأحمر",
-      "البحر المتوسط",
-      "الخليج العربي",
-      "المحيط الأطلسي",
-      "المحيط الهادئ",
-      "المحيط الهندي",
-      "المحيط المتجمد"
-    ]
-  },
-
-  {
-    id:310,
-    category:"جغرافيا",
-    question:"اذكر 5 أنهار مشهورة؟",
-    answers:[
-      "النيل",
-      "دجلة",
-      "الفرات",
-      "الأمازون",
-      "الدانوب",
-      "الميسيسيبي",
-      "اليانغتسي"
-    ]
-  },
-
-  {
-    id:311,
-    category:"جغرافيا",
-    question:"اذكر 5 دول آسيوية؟",
-    answers:[
-      "اليابان",
-      "الصين",
-      "الهند",
-      "العراق",
-      "الأردن",
-      "قطر",
-      "الكويت",
-      "الإمارات"
-    ]
-  },
-
-  {
-    id:312,
-    category:"جغرافيا",
-    question:"اذكر 5 عواصم تبدأ بحرف الميم؟",
-    answers:[
-      "مدريد",
-      "مسقط",
-      "مقديشو",
-      "موسكو",
-      "مانيلا",
-      "مكسيكو سيتي"
-    ]
-  },
-
-  {
-    id:313,
-    category:"جغرافيا",
-    question:"اذكر 5 دول لها سواحل على البحر الأحمر؟",
-    answers:[
-      "السعودية",
-      "مصر",
-      "السودان",
-      "اليمن",
-      "الأردن",
-      "إريتريا",
-      "جيبوتي"
-    ]
-  },
-
-  {
-    id:314,
-    category:"جغرافيا",
-    question:"اذكر 5 دول تبدأ بحرف السين؟",
-    answers:[
-      "السعودية",
-      "السودان",
-      "سوريا",
-      "سنغافورة",
-      "سويسرا",
-      "السويد",
-      "سلوفاكيا",
-      "سلوفينيا"
-    ]
-  },
-
-  {
-    id:315,
-    category:"جغرافيا",
-    question:"اذكر 5 مدن عالمية مشهورة؟",
-    answers:[
-      "باريس",
-      "لندن",
-      "دبي",
-      "نيويورك",
-      "طوكيو",
-      "روما",
-      "مدريد",
-      "إسطنبول"
-    ]
-  },
-
-  {
-    id:316,
-    category:"جغرافيا",
-    question:"اذكر 5 دول جزرية؟",
-    answers:[
-      "اليابان",
-      "إندونيسيا",
-      "الفلبين",
-      "مالطا",
-      "البحرين",
-      "سنغافورة",
-      "المالديف"
-    ]
-  },
-
-  {
-    id:317,
-    category:"جغرافيا",
-    question:"اذكر 5 دول تبدأ بحرف الباء؟",
-    answers:[
-      "البحرين",
-      "بلجيكا",
-      "بلغاريا",
-      "بنغلاديش",
-      "باكستان",
-      "بنما",
-      "البرازيل",
-      "بوتان"
-    ]
-  },
-
-  {
-    id:318,
-    category:"جغرافيا",
-    question:"اذكر 5 دول أفريقية؟",
-    answers:[
-      "مصر",
-      "الجزائر",
-      "المغرب",
-      "كينيا",
-      "نيجيريا",
-      "جنوب أفريقيا",
-      "تونس",
-      "غانا"
-    ]
-  },
-
-  {
-    id:319,
-    category:"جغرافيا",
-    question:"اذكر 5 دول عربية في قارة آسيا؟",
-    answers:[
-      "السعودية",
-      "الإمارات",
-      "قطر",
-      "الكويت",
-      "البحرين",
-      "عمان",
-      "العراق",
-      "الأردن",
-      "سوريا",
-      "لبنان"
-    ]
-  },
-
-  {
-    id:320,
-    category:"جغرافيا",
-    question:"اذكر 5 أماكن مشهورة في السعودية؟",
-    answers:[
-      "مكة",
-      "المدينة",
-      "الرياض",
-      "العلا",
-      "جدة",
-      "أبها",
-      "الدرعية",
-      "الخبر"
-    ]
-  },
-
-
-  // =========================
-  // 📜 تاريخ
-  // =========================
-
-  {
-    id:401,
-    category:"تاريخ",
-    question:"اذكر 5 من الخلفاء الراشدين أو الصحابة المشهورين؟",
-    answers:[
-      "أبو بكر",
-      "عمر",
-      "عثمان",
-      "علي",
-      "طلحة",
-      "الزبير",
-      "سعد",
-      "سعيد",
-      "عبدالرحمن",
-      "بلال"
-    ]
-  },
-
-  {
-    id:402,
-    category:"تاريخ",
-    question:"اذكر 5 غزوات أو معارك إسلامية شهيرة؟",
-    answers:[
-      "بدر",
-      "أحد",
-      "الخندق",
-      "خيبر",
-      "حنين",
-      "تبوك",
-      "اليرموك",
-      "القادسية"
-    ]
-  },
-
-  {
-    id:403,
-    category:"تاريخ",
-    question:"اذكر 5 حضارات قديمة؟",
-    answers:[
-      "المصرية",
-      "الرومانية",
-      "اليونانية",
-      "الفارسية",
-      "البابلية",
-      "السومرية",
-      "الفينيقية"
-    ]
-  },
-
-  {
-    id:404,
-    category:"تاريخ",
-    question:"اذكر 5 شخصيات تاريخية مشهورة؟",
-    answers:[
-      "صلاح الدين",
-      "الإسكندر",
-      "نابليون",
-      "ابن سينا",
-      "ابن خلدون",
-      "الخوارزمي",
-      "جابر بن حيان"
-    ]
-  },
-
-  {
-    id:405,
-    category:"تاريخ",
-    question:"اذكر 5 من أشهر العلماء المسلمين؟",
-    answers:[
-      "الخوارزمي",
-      "ابن سينا",
-      "ابن الهيثم",
-      "الرازي",
-      "جابر بن حيان",
-      "ابن النفيس",
-      "البيروني"
-    ]
-  },
-
-  {
-    id:406,
-    category:"تاريخ",
-    question:"اذكر 5 من المدن التاريخية المشهورة؟",
-    answers:[
-      "مكة",
-      "المدينة",
-      "بغداد",
-      "دمشق",
-      "القاهرة",
-      "القدس",
-      "روما",
-      "أثينا"
-    ]
-  },
-
-  {
-    id:407,
-    category:"تاريخ",
-    question:"اذكر 5 من الاختراعات المهمة في التاريخ؟",
-    answers:[
-      "الطباعة",
-      "الهاتف",
-      "المصباح",
-      "السيارة",
-      "الطائرة",
-      "التلفاز",
-      "الحاسوب",
-      "الإنترنت"
-    ]
-  },
-
-  {
-    id:408,
-    category:"تاريخ",
-    question:"اذكر 5 من عجائب العالم أو المعالم التاريخية الشهيرة؟",
-    answers:[
-      "الأهرامات",
-      "سور الصين",
-      "تاج محل",
-      "الكولوسيوم",
-      "البتراء",
-      "برج بيزا"
-    ]
-  },
-
-  {
-    id:409,
-    category:"تاريخ",
-    question:"اذكر 5 من ملوك أو حكام مصر القديمة؟",
-    answers:[
-      "رمسيس",
-      "توت عنخ آمون",
-      "خوفو",
-      "تحتمس",
-      "أحمس",
-      "حتشبسوت"
-    ]
-  },
-
-  {
-    id:410,
-    category:"تاريخ",
-    question:"اذكر 5 من الخلفاء أو حكام الدولة الأموية؟",
-    answers:[
-      "معاوية",
-      "عبدالملك",
-      "الوليد",
-      "سليمان",
-      "عمر بن عبدالعزيز",
-      "هشام",
-      "مروان"
-    ]
-  },
-
-  {
-    id:411,
-    category:"تاريخ",
-    question:"اذكر 5 من خلفاء الدولة العباسية؟",
-    answers:[
-      "أبو العباس",
-      "أبو جعفر المنصور",
-      "هارون الرشيد",
-      "المأمون",
-      "المعتصم",
-      "المتوكل"
-    ]
-  },
-
-  {
-    id:412,
-    category:"تاريخ",
-    question:"اذكر 5 من أشهر الرحالة في التاريخ؟",
-    answers:[
-      "ابن بطوطة",
-      "ماركو بولو",
-      "كريستوفر كولومبوس",
-      "ابن جبير",
-      "الإدريسي"
-    ]
-  },
-
-  {
-    id:413,
-    category:"تاريخ",
-    question:"اذكر 5 من الشخصيات الأدبية العربية؟",
-    answers:[
-      "المتنبي",
-      "الجاحظ",
-      "نجيب محفوظ",
-      "طه حسين",
-      "أحمد شوقي",
-      "عنترة"
-    ]
-  },
-
-  {
-    id:414,
-    category:"تاريخ",
-    question:"اذكر 5 من شعراء العصر الجاهلي؟",
-    answers:[
-      "امرؤ القيس",
-      "عنترة",
-      "زهير",
-      "طرفة",
-      "لبيد",
-      "عمرو بن كلثوم"
-    ]
-  },
-
-  {
-    id:415,
-    category:"تاريخ",
-    question:"اذكر 5 من المعالم التاريخية في العالم العربي؟",
-    answers:[
-      "الأهرامات",
-      "البتراء",
-      "تدمر",
-      "قلعة حلب",
-      "الدرعية",
-      "الجامع الأزهر"
-    ]
-  },
-
-  {
-    id:416,
-    category:"تاريخ",
-    question:"اذكر 5 من أشهر المتاحف في العالم؟",
-    answers:[
-      "اللوفر",
-      "المتحف البريطاني",
-      "المتحف المصري",
-      "متاحف الفاتيكان",
-      "متحف المتروبوليتان"
-    ]
-  },
-
-  {
-    id:417,
-    category:"تاريخ",
-    question:"اذكر 5 من الفنون القديمة؟",
-    answers:[
-      "الرسم",
-      "النحت",
-      "الموسيقى",
-      "العمارة",
-      "الشعر",
-      "المسرح"
-    ]
-  },
-
-  {
-    id:418,
-    category:"تاريخ",
-    question:"اذكر 5 من الشخصيات العلمية المشهورة عالميًا؟",
-    answers:[
-      "نيوتن",
-      "أينشتاين",
-      "غاليليو",
-      "داروين",
-      "إديسون",
-      "ماري كوري"
-    ]
-  },
-
-  {
-    id:419,
-    category:"تاريخ",
-    question:"اذكر 5 من العلماء المسلمين في الطب أو العلوم؟",
-    answers:[
-      "ابن سينا",
-      "الرازي",
-      "ابن النفيس",
-      "ابن الهيثم",
-      "الخوارزمي",
-      "البيروني"
-    ]
-  },
-
-  {
-    id:420,
-    category:"تاريخ",
-    question:"اذكر 5 من المعالم المشهورة في السعودية؟",
-    answers:[
-      "الحرم المكي",
-      "المسجد النبوي",
-      "العلا",
-      "الدرعية",
-      "برج المملكة",
-      "نافورة جدة",
-      "مركز الملك عبدالله المالي"
-    ]
-  },
-
-
-  // =========================
-  // 🔤 حروف
-  // =========================
-
-  {
-    id:501,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الميم (م)؟",
-    letter:"م",
-    answers:[
-      "مريم","موز","مانجو","مدرسة","مفتاح",
-      "محمد","مطر","مسجد","مكتب","مدينة"
-    ]
-  },
-
-  {
-    id:502,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف السين (س)؟",
-    letter:"س",
-    answers:[
-      "سارة","ساعة","سيارة","سمك","سماء",
-      "سعيد","سكر","سلمى","سيف","سحاب"
-    ]
-  },
-
-  {
-    id:503,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الباء (ب)؟",
-    letter:"ب",
-    answers:[
-      "باب","برتقال","بطيخ","بيت","بحر",
-      "بدر","بسمة","بصل","بطة","بستان"
-    ]
-  },
-
-  {
-    id:504,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الألف (ا)؟",
-    letter:"ا",
-    answers:[
-      "أسد","أرنب","أرز","أب","أخت",
-      "أمل","أحمد","إبراهيم","إبرة","أرض"
-    ]
-  },
-
-  {
-    id:505,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الراء (ر)؟",
-    letter:"ر",
-    answers:[
-      "رمان","رجل","ربيع","ريشة","رمل",
-      "ريم","رسالة","روبوت","رعد","رياض"
-    ]
-  },
-
-  {
-    id:506,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الكاف (ك)؟",
-    letter:"ك",
-    answers:[
-      "كتاب","كرسي","كرة","كعك","كلب",
-      "كوب","كوكب","كنز","كرتون","كهرباء"
-    ]
-  },
-
-  {
-    id:507,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف النون (ن)؟",
-    letter:"ن",
-    answers:[
-      "نمر","نحلة","نهر","نجمة","نخلة",
-      "نور","نوافذ","نار","نسر","نبات"
-    ]
-  },
-
-  {
-    id:508,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف التاء (ت)؟",
-    letter:"ت",
-    answers:[
-      "تفاح","تمر","تلفاز","تاج","تمساح",
-      "توت","تلميذ","تاريخ","تنين","ترمس"
-    ]
-  },
-
-  {
-    id:509,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الجيم (ج)؟",
-    letter:"ج",
-    answers:[
-      "جمل","جبل","جزر","جوال","جرس",
-      "جريدة","جوهرة","جدار","جمعة","جندي"
-    ]
-  },
-
-  {
-    id:510,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الدال (د)؟",
-    letter:"د",
-    answers:[
-      "دب","دجاجة","دراجة","دولاب","دجاج",
-      "دفتر","دلو","دراهم","دلفين","دخان"
-    ]
-  },
-
-  {
-    id:511,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الفاء (ف)؟",
-    letter:"ف",
-    answers:[
-      "فراشة","فيل","فراولة","فستان","فم",
-      "فهد","فجر","فانوس","فحم","فلفل"
-    ]
-  },
-
-  {
-    id:512,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف العين (ع)؟",
-    letter:"ع",
-    answers:[
-      "عنب","عين","عسل","عصفور","علم",
-      "عمر","عربة","عقرب","عطر","عيد"
-    ]
-  },
-
-  {
-    id:513,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف اللام (ل)؟",
-    letter:"ل",
-    answers:[
-      "ليمون","لؤلؤ","ليل","لعبة","لوحة",
-      "لبن","لحم","لوز","لسان","لون"
-    ]
-  },
-
-  {
-    id:514,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الهاء (هـ)؟",
-    letter:"ه",
-    answers:[
-      "هلال","هاتف","هدية","هرم","هدهد",
-      "هواء","هند","هرة","هروب","هندسة"
-    ]
-  },
-
-  {
-    id:515,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الواو (و)؟",
-    letter:"و",
-    answers:[
-      "وردة","ولد","ورق","وطن","وقت",
-      "وحش","وجه","وسادة","وادي","ورشة"
-    ]
-  },
-
-  {
-    id:516,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الصاد (ص)؟",
-    letter:"ص",
-    answers:[
-      "صقر","صابون","صورة","صندوق","صحراء",
-      "صباح","صحن","صوت","صاروخ","صفحة"
-    ]
-  },
-
-  {
-    id:517,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف القاف (ق)؟",
-    letter:"ق",
-    answers:[
-      "قمر","قلم","قطة","قهوة","قلب",
-      "قصر","قارب","قميص","قرش","قرآن"
-    ]
-  },
-
-  {
-    id:518,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الشين (ش)؟",
-    letter:"ش",
-    answers:[
-      "شمس","شجرة","شارع","شباك","شاي",
-      "شوكولاتة","شاحنة","شلال","شعلة","شعر"
-    ]
-  },
-
-  {
-    id:519,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الحاء (ح)؟",
-    letter:"ح",
-    answers:[
-      "حصان","حوت","حليب","حقيبة","حديقة",
-      "حجر","حبل","حمامة","حلوى","حارس"
-    ]
-  },
-
-  {
-    id:520,
-    category:"حروف",
-    question:"اذكر 5 كلمات تبدأ بحرف الطاء (ط)؟",
-    letter:"ط",
-    answers:[
-      "طائرة","طاولة","طبيب","طماطم","طريق",
-      "طفل","طبل","طاووس","طعام","طقس"
-    ]
-  }
-
-];
-
-
-// =========================================================
-// ⚙️ متغيرات اللعبة
-// =========================================================
-
-let currentValidAnswers = [];
-let currentLetter = null;
-
-let timerSeconds = 60;
-let timerInterval = null;
-
-let isGameRunning = false;
-
-let currentRoundId = 0;
-
-let selectedCategory = 'الكل';
-
-let usedQuestionIds = [];
-
-let teamScores = {
-  A: 0,
-  B: 0
-};
-
-let roundWinnerLocked = false;
-let activeTimerRoundId = null;
-
-let finishLock = false;
-let startingRound = false;
-
-let currentGameStatus = 'waiting';
-
-
-// =========================================================
-// 🔊 الصوت
-// =========================================================
-
-let soundMuted =
-  localStorage.getItem('speedGameMuted') === 'true';
-
-let audioContext = null;
-
-
-function getAudioContext() {
-
-  if (!audioContext) {
-
-    audioContext =
-      new (window.AudioContext ||
-      window.webkitAudioContext)();
-
-  }
-
-  return audioContext;
-
-}
-
-
-function playSound(type) {
-
-  if (soundMuted) return;
-
-  try {
-
-    const ctx = getAudioContext();
-
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-
-    const oscillator =
-      ctx.createOscillator();
-
-    const gain =
-      ctx.createGain();
-
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-
-    let frequency = 500;
-    let duration = 0.12;
-
-    if (type === 'correct') {
-      frequency = 700;
-      duration = 0.15;
-    }
-
-    if (type === 'wrong') {
-      frequency = 220;
-      duration = 0.18;
-    }
-
-    if (type === 'win') {
-      frequency = 850;
-      duration = 0.5;
-    }
-
-    if (type === 'time') {
-      frequency = 1000;
-      duration = 0.15;
-    }
-
-    oscillator.frequency.value = frequency;
-
-    gain.gain.setValueAtTime(
-      0.001,
-      ctx.currentTime
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.2,
-      ctx.currentTime + 0.01
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      ctx.currentTime + duration
-    );
-
-    oscillator.start();
-
-    oscillator.stop(
-      ctx.currentTime + duration
-    );
-
-  } catch (e) {}
-
-}
-
-
-function toggleMute() {
-
-  soundMuted = !soundMuted;
-
-  localStorage.setItem(
-    'speedGameMuted',
-    soundMuted
-  );
-
-  document.getElementById(
-    'mute-button'
-  ).innerText =
-    soundMuted ? '🔇' : '🔊';
-
-}
-
-
-document.getElementById(
-  'mute-button'
-).innerText =
-  soundMuted ? '🔇' : '🔊';
-
-
-// =========================================================
-// 📱 QR — نفس الطريقة الأصلية
-// =========================================================
-
-window.addEventListener('DOMContentLoaded', () => {
-
-  const baseUrl =
-    window.location.href.substring(
-      0,
-      window.location.href.lastIndexOf('/')
-    );
-
-  new QRCode(
-    document.getElementById("qrcode-team-a"),
-    {
-      text:
-        `${baseUrl}/answer.html?team=A`,
-      width: 110,
-      height: 110
-    }
-  );
-
-  new QRCode(
-    document.getElementById("qrcode-team-b"),
-    {
-      text:
-        `${baseUrl}/answer.html?team=B`,
-      width: 110,
-      height: 110
-    }
-  );
-
-});
-
-
-// =========================================================
-// 🎯 اختيار القسم
-// =========================================================
-
-function selectCategory(cat) {
-
-  selectedCategory = cat;
-
-  const buttons =
-    document.querySelectorAll('.cat-btn');
-
-  buttons.forEach(btn => {
-
-    btn.classList.remove('selected');
-
-    if (
-      (
-        cat === 'الكل' &&
-        btn.innerText.includes('عشوائي')
-      ) ||
-      (
-        cat !== 'الكل' &&
-        btn.innerText.includes(cat)
-      )
-    ) {
-
-      btn.classList.add('selected');
-
-    }
-
-  });
-
-}
-
-
-// =========================================================
-// 🧹 توحيد الكتابة العربية
-// =========================================================
-
-function normalizeText(text) {
-
-  return String(text || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\u064B-\u065F\u0670]/g, '')
-    .replace(/[إأآٱ]/g, 'ا')
-    .replace(/ى/g, 'ي')
-    .replace(/ة/g, 'ه')
-    .replace(/ؤ/g, 'و')
-    .replace(/ئ/g, 'ي')
-    .replace(/ـ/g, '')
-    .replace(/[^\u0600-\u06FFa-zA-Z0-9]/g, '')
-    .replace(/^ال/, '');
-
-}
-
-
-function normalizeLetter(letter) {
-
-  return normalizeText(letter);
-
-}
-
-
-// =========================================================
-// 🏆 لوحة النقاط
-// =========================================================
-
-function updateScoreBoard() {
-
-  document.getElementById(
-    'score-team-a'
-  ).innerText =
-    `🔵 الفريق أ: ${teamScores.A} نقطة`;
-
-  document.getElementById(
-    'score-team-b'
-  ).innerText =
-    `🔴 الفريق ب: ${teamScores.B} نقطة`;
-
-}
-
-
-// =========================================================
-// 💾 الأسئلة المستخدمة
-// =========================================================
-
-function loadLocalUsedQuestions() {
-
-  try {
-
-    const saved =
-      localStorage.getItem(
-        'speedGameUsedQuestions'
-      );
-
-    if (!saved) return [];
-
-    const parsed =
-      JSON.parse(saved);
-
-    if (Array.isArray(parsed)) {
-
-      return parsed
-        .map(Number)
-        .filter(Number.isFinite);
-
-    }
-
-  } catch (e) {}
-
-  return [];
-
-}
-
-
-function saveLocalUsedQuestions() {
-
-  try {
-
-    localStorage.setItem(
-      'speedGameUsedQuestions',
-      JSON.stringify(usedQuestionIds)
-    );
-
-  } catch (e) {}
-
-}
-
-
-// =========================================================
-// 🧹 الحالة الافتراضية
-// =========================================================
-
-function getEmptyGameState() {
-
-  return {
-
-    roundId: 0,
-
-    currentQuestion: '',
-
-    category: '',
-
-    letter: null,
-
-    validAnswers: [],
-
-    status: 'waiting',
-
-    winner: '',
-
-    roundWinner: '',
-
-    duration: 60,
-
-    scoreA: 0,
-
-    scoreB: 0,
-
-    usedQuestionIds: []
-
-  };
-
-}
-
-
-// =========================================================
-// 🆕 بدء لعبة جديدة بالكامل
-// =========================================================
-
-async function resetGame() {
-
-  stopTimer();
-
-  currentGameStatus = 'waiting';
-
-  currentRoundId = 0;
-
-  currentValidAnswers = [];
-
-  currentLetter = null;
-
-  usedQuestionIds = [];
-
-  teamScores = {
-    A: 0,
-    B: 0
-  };
-
-  roundWinnerLocked = false;
-
-  finishLock = false;
-
-  startingRound = false;
-
-  saveLocalUsedQuestions();
-
-  await db.ref(
-    'games/answers'
-  ).remove();
-
-  await db.ref(
-    'games/gameState'
-  ).set(
-    getEmptyGameState()
-  );
-
-}
-
-
-// =========================================================
-// 🆕 التحقق من طلب لعبة جديدة
-// =========================================================
-
-const forceNewGame =
-  new URLSearchParams(
-    window.location.search
-  ).get('newgame') === '1';
-
-
-// =========================================================
-// 🎯 تطبيق حالة Firebase
-// =========================================================
-
-function applyGameState(data) {
-
-  if (!data) {
-
-    data = getEmptyGameState();
-
-  }
-
-
-  currentRoundId =
-    Number(data.roundId || 0);
-
-
-  currentGameStatus =
-    data.status || 'waiting';
-
-
-  currentValidAnswers =
-    Array.isArray(data.validAnswers)
-      ? data.validAnswers
-      : (
-          data.validAnswers
-            ? Object.values(data.validAnswers)
-            : []
-        );
-
-
-  currentLetter =
-    data.letter || null;
-
-
-  teamScores.A =
-    Number(data.scoreA || 0);
-
-  teamScores.B =
-    Number(data.scoreB || 0);
-
-
-  // 🔥 أهم تعديل:
-  // قراءة الأسئلة المستخدمة من Firebase
-  if (
-    Array.isArray(data.usedQuestionIds)
-  ) {
-
-    usedQuestionIds =
-      data.usedQuestionIds
-        .map(Number)
-        .filter(Number.isFinite);
-
-    saveLocalUsedQuestions();
-
-  }
-
-  else {
-
-    // دعم الحالة القديمة
-    const localUsed =
-      loadLocalUsedQuestions();
-
-    usedQuestionIds =
-      localUsed;
-
-  }
-
-
-  updateScoreBoard();
-
-
-  const roundDisplay =
-    currentRoundId > 0
-      ? currentRoundId
-      : 1;
-
-
-  document.getElementById(
-    'round-title'
-  ).innerText =
-    `الجولة ${roundDisplay}`;
-
-
-  if (
-    currentGameStatus ===
-    'started'
-  ) {
-
-    document.getElementById(
-      'question-display'
-    ).innerText =
-      data.currentQuestion ||
-      'بانتظار السؤال...';
-
-
-    document.getElementById(
-      'category-display'
-    ).innerText =
-      data.category ||
-      'عام';
-
-
-    document
-      .getElementById(
-        'result-overlay'
-      )
-      .classList.remove(
-        'active'
-      );
-
-
-    roundWinnerLocked = false;
-
-
-    // 🔥 لا تعيد تشغيل المؤقت
-    // إذا كانت نفس الجولة
-    if (
-      activeTimerRoundId !==
-      currentRoundId
-    ) {
-
-      startLocalTimer(
-        Number(data.duration || 60),
-        currentRoundId
-      );
-
-    }
-
-  }
-
-
-  else if (
-    currentGameStatus ===
-    'finished'
-  ) {
-
-    stopTimer();
-
-    document.getElementById(
-      'question-display'
-    ).innerText =
-      data.currentQuestion ||
-      'انتهت الجولة.';
-
-
-    document.getElementById(
-      'category-display'
-    ).innerText =
-      data.category ||
-      'القسم';
-
-
-    showRoundResult(data);
-
-  }
-
-
-  else {
-
-    stopTimer();
-
-    document.getElementById(
-      'question-display'
-    ).innerText =
-      'اضغط على بدء اللعبة للبدء...';
-
-
-    document.getElementById(
-      'category-display'
-    ).innerText =
-      'القسم';
-
-
-    document
-      .getElementById(
-        'result-overlay'
-      )
-      .classList.add(
-        'active'
-      );
-
-    document.getElementById(
-      'winner-title-header'
-    ).innerText =
-      '🎮 مرحباً بكم في تحدي السرعة';
-
-
-    document.getElementById(
-      'winner-text'
-    ).innerText =
-      'اختر القسم وابدأ الجولة الأولى!';
-
-
-    document.getElementById(
-      'final-score'
-    ).innerHTML =
-      `🔵 الفريق أ: ${teamScores.A} نقطة<br>
-       🔴 الفريق ب: ${teamScores.B} نقطة`;
-
-  }
-
-}
-
-
-// =========================================================
-// 🎯 تشغيل مستمع Firebase
-// =========================================================
-
-function bindFirebaseListeners() {
-
-  // ---------------------------------
-  // حالة اللعبة
-  // ---------------------------------
-
-  db.ref(
-    'games/gameState'
-  ).on(
-    'value',
-    snapshot => {
-
-      const data =
-        snapshot.val();
-
-      applyGameState(data);
-
-    }
-  );
-
-
-  // ---------------------------------
-  // إجابات الفريق A
-  // ---------------------------------
-
-  db.ref(
-    'games/answers/teamA'
-  ).on(
-    'value',
-    snapshot => {
-
-      processAnswers(
-        'A',
-        readAnswers(
-          snapshot
-        )
-      );
-
-    }
-  );
-
-
-  // ---------------------------------
-  // إجابات الفريق B
-  // ---------------------------------
-
-  db.ref(
-    'games/answers/teamB'
-  ).on(
-    'value',
-    snapshot => {
-
-      processAnswers(
-        'B',
-        readAnswers(
-          snapshot
-        )
-      );
-
-    }
-  );
-
-}
-
-
-// =========================================================
-// 📥 قراءة الإجابات وترتيبها
-// =========================================================
-
-function readAnswers(snapshot) {
-
-  const value =
-    snapshot.val();
-
-  if (!value) {
-    return [];
-  }
-
-
-  let answers =
-    Array.isArray(value)
-      ? value
-      : Object.values(value);
-
-
-  answers =
-    answers.filter(
-      item =>
-        item &&
-        typeof item === 'object'
-    );
-
-
-  answers.sort(
-    (a, b) => {
-
-      return (
-        Number(a.timestamp || 0) -
-        Number(b.timestamp || 0)
-      );
-
-    }
-  );
-
-
-  return answers;
-
-}
-
-
-// =========================================================
-// 🎉 عرض النتيجة
-// =========================================================
-
-function showRoundResult(data) {
-
-  const winnerTitle =
-    data.winner ||
-    '🏁 انتهت الجولة';
-
-
-  document.getElementById(
-    'winner-title-header'
-  ).innerText =
-    winnerTitle;
-
-
-  if (
-    data.roundWinner === 'A'
-  ) {
-
-    document.getElementById(
-      'winner-text'
-    ).innerText =
-      '🎉 الفريق أ فاز بهذه الجولة!';
-
-  }
-
-  else if (
-    data.roundWinner === 'B'
-  ) {
-
-    document.getElementById(
-      'winner-text'
-    ).innerText =
-      '🎉 الفريق ب فاز بهذه الجولة!';
-
-  }
-
-  else {
-
-    document.getElementById(
-      'winner-text'
-    ).innerText =
-      '⏰ انتهى الوقت دون فائز.';
-
-  }
-
-
-  const finalScoreA =
-    Number(
-      data.scoreA ??
-      teamScores.A
-    );
-
-
-  const finalScoreB =
-    Number(
-      data.scoreB ??
-      teamScores.B
-    );
-
-
-  document.getElementById(
-    'final-score'
-  ).innerHTML =
-
-    `🔵 الفريق أ: ${finalScoreA} نقطة<br>
-     🔴 الفريق ب: ${finalScoreB} نقطة`;
-
-
-  document
-    .getElementById(
-      'result-overlay'
-    )
-    .classList.add(
-      'active'
-    );
-
-}
-
-
-// =========================================================
-// 🧠 هل الإجابة صحيحة؟
-/* ======================================================== */
-
-function isAnswerCorrect(answer) {
-
-  const cleanText =
-    normalizeText(answer);
-
-
-  if (!cleanText) {
-    return false;
-  }
-
-
-  // 🔤 سؤال الحروف
-  if (currentLetter) {
-
-    const normalizedLetter =
-      normalizeLetter(
-        currentLetter
-      );
-
-
-    const startsWithLetter =
-      cleanText.startsWith(
-        normalizedLetter
-      );
-
-
-    const inBank =
-      currentValidAnswers.some(
-        valid => {
-
-          return (
-            normalizeText(valid) ===
-            cleanText
-          );
-
-        }
-      );
-
-
-    return (
-      startsWithLetter &&
-      inBank
-    );
-
-  }
-
-
-  // 📝 سؤال عادي
-  return currentValidAnswers.some(
-    valid => {
-
-      return (
-        normalizeText(valid) ===
-        cleanText
-      );
-
-    }
-  );
-
-}
-
-
-// =========================================================
-// 🛡️ إنشاء عنصر الإجابة
-// =========================================================
-
-function createAnswerElement(
-  index,
-  rawText,
-  correct
-) {
-
-  const item =
-    document.createElement('div');
-
-
-  item.className =
-    correct
-      ? 'answer-item correct'
-      : 'answer-item wrong';
-
-
-  const left =
-    document.createElement('span');
-
-
-  const number =
-    document.createElement('b');
-
-
-  number.innerText =
-    `${index}. `;
-
-
-  left.appendChild(number);
-
-
-  left.appendChild(
-    document.createTextNode(
-      rawText
-    )
-  );
-
-
-  const right =
-    document.createElement('span');
-
-
-  right.innerText =
-    correct
-      ? '✅ صحيحة'
-      : '❌ خاطئة';
-
-
-  item.appendChild(left);
-
-  item.appendChild(right);
-
-
-  return item;
-
-}
-
-
-// =========================================================
-// ✅ معالجة الإجابات
-// =========================================================
-
-function processAnswers(
-  team,
-  answers
-) {
-
-  const listElement =
-    team === 'A'
-      ? document.getElementById(
-          'list-team-a'
-        )
-      : document.getElementById(
-          'list-team-b'
-        );
-
-
-  const countElement =
-    team === 'A'
-      ? document.getElementById(
-          'count-team-a'
-        )
-      : document.getElementById(
-          'count-team-b'
-        );
-
-
-  listElement.innerHTML = '';
-
-
-  let correctCount = 0;
-
-
-  const usedWords =
-    new Set();
-
-
-  answers.forEach(
-    (ans, idx) => {
-
-      const rawText =
-        String(
-          ans?.text || ''
-        ).trim();
-
-
-      const cleanText =
-        normalizeText(
-          rawText
-        );
-
-
-      const correct =
-        isAnswerCorrect(
-          rawText
-        );
-
-
-      const notDuplicate =
-        cleanText.length > 0 &&
-        !usedWords.has(
-          cleanText
-        );
-
-
-      const finalCorrect =
-        correct &&
-        notDuplicate;
-
-
-      if (finalCorrect) {
-
-        correctCount++;
-
-        usedWords.add(
-          cleanText
-        );
-
-      }
-
-
-      const item =
-        createAnswerElement(
-          idx + 1,
-          rawText,
-          finalCorrect
-        );
-
-
-      listElement.appendChild(
-        item
-      );
-
-    }
-  );
-
-
-  countElement.innerText =
-    `${correctCount} / 5`;
-
-
-  // لا يمكن إعلان فائز
-  // إذا لم تكن الجولة فعالة
-  if (
-    !isGameRunning ||
-    currentGameStatus !== 'started'
-  ) {
-
-    return;
-
-  }
-
-
-  if (
-    correctCount >= 5 &&
-    !roundWinnerLocked &&
-    !finishLock
-  ) {
-
-    finishRound(team);
-
-  }
-
-}
-
-
-// =========================================================
-// 🏆 إنهاء الجولة — Transaction آمن
-// =========================================================
-
-function finishRound(team) {
-
-  if (
-    finishLock ||
-    !isGameRunning ||
-    currentGameStatus !== 'started'
-  ) {
-
-    return;
-
-  }
-
-
-  finishLock = true;
-
-  roundWinnerLocked = true;
-
-  const winningRoundId =
-    currentRoundId;
-
-
-  stopTimer();
-
-
-  const winnerName =
-    team === 'A'
-      ? 'الفريق أ (الأزرق)'
-      : 'الفريق ب (الأحمر)';
-
-
-  db.ref(
-    'games/gameState'
-  ).transaction(
-    current => {
-
-      if (!current) {
-
-        return;
-
-      }
-
-
-      // إذا فاز فريق قبله
-      if (
-        current.status !==
-        'started'
-      ) {
-
-        return;
-
-      }
-
-
-      // حماية من الجولة القديمة
-      if (
-        Number(current.roundId) !==
-        Number(winningRoundId)
-      ) {
-
-        return;
-
-      }
-
-
-      const scoreA =
-        Number(
-          current.scoreA || 0
-        );
-
-
-      const scoreB =
-        Number(
-          current.scoreB || 0
-        );
-
-
-      return {
-
-        ...current,
-
-        status:
-          'finished',
-
-        roundWinner:
-          team,
-
-        winner:
-          `🎉 فوز بالسرعة! ${winnerName} حقق 5 إجابات صحيحة أولاً!`,
-
-        scoreA:
-          team === 'A'
-            ? scoreA + 1
-            : scoreA,
-
-        scoreB:
-          team === 'B'
-            ? scoreB + 1
-            : scoreB
-
-      };
-
-    }
-  )
-  .then(result => {
-
-    if (
-      result.committed
-    ) {
-
-      playSound('win');
-
-    }
-
-    else {
-
-      finishLock = false;
-
-      roundWinnerLocked = false;
-
-    }
-
-  })
-  .catch(error => {
-
-    console.error(
-      'خطأ في إنهاء الجولة:',
-      error
-    );
-
-    finishLock = false;
-
-    roundWinnerLocked = false;
-
-  });
-
-}
-
-
-// =========================================================
-// 🚀 بدء الجولة التالية
-// =========================================================
-
-async function startNextRound() {
-
-  if (
-    isGameRunning ||
-    startingRound
-  ) {
-
-    return;
-
-  }
-
-
-  startingRound = true;
-
-  finishLock = false;
-
-  roundWinnerLocked = false;
-
-  currentGameStatus =
-    'transitioning';
-
-
-  stopTimer();
-
-
-  try {
-
-    // ---------------------------------
-    // الأسئلة المتاحة حسب القسم
-    // ---------------------------------
-
-    const categoryQuestions =
-      questionsBank.filter(
-        q => {
-
-          return (
-            selectedCategory ===
-              'الكل' ||
-            q.category ===
-              selectedCategory
-          );
-
-        }
-      );
-
-
-    if (
-      categoryQuestions.length ===
-      0
-    ) {
-
-      alert(
-        'لا توجد أسئلة في هذا القسم.'
-      );
-
-      currentGameStatus =
-        'waiting';
-
-      return;
-
-    }
-
-
-    // ---------------------------------
-    // الأسئلة غير المستخدمة
-    // ---------------------------------
-
-    const usedSet =
-      new Set(
-        usedQuestionIds.map(
-          Number
-        )
-      );
-
-
-    let availableQuestions =
-      categoryQuestions.filter(
-        q =>
-          !usedSet.has(
-            Number(q.id)
-          )
-      );
-
-
-    // ---------------------------------
-    // إذا انتهى قسم معين
-    // نعيد أسئلته فقط
-    // ---------------------------------
-
-    if (
-      availableQuestions.length ===
-      0
-    ) {
-
-      const categoryIds =
-        new Set(
-          categoryQuestions.map(
-            q =>
-              Number(q.id)
-          )
-        );
-
-
-      usedQuestionIds =
-        usedQuestionIds.filter(
-          id =>
-            !categoryIds.has(
-              Number(id)
-            )
-        );
-
-
-      availableQuestions =
-        categoryQuestions.slice();
-
-    }
-
-
-    if (
-      availableQuestions.length ===
-      0
-    ) {
-
-      alert(
-        'لا توجد أسئلة متاحة.'
-      );
-
-      currentGameStatus =
-        'waiting';
-
-      return;
-
-    }
-
-
-    // ---------------------------------
-    // اختيار سؤال عشوائي
-    // ---------------------------------
-
-    const selectedQuestion =
-      availableQuestions[
-        Math.floor(
-          Math.random() *
-          availableQuestions.length
-        )
-      ];
-
-
-    // ---------------------------------
-    // إضافة السؤال إلى المستخدم
-    // ---------------------------------
-
-    const nextUsedIds =
-      Array.from(
-        new Set([
-          ...usedQuestionIds.map(
-            Number
-          ),
-          Number(
-            selectedQuestion.id
-          )
-        ])
-      );
-
-
-    const nextRound =
-      Number(currentRoundId || 0) +
-      1;
-
-
-    // ---------------------------------
-    // الحالة الجديدة
-    // ---------------------------------
-
-    const newGameState = {
-
-      roundId:
-        nextRound,
-
-      currentQuestion:
-        selectedQuestion.question,
-
-      category:
-        selectedQuestion.category,
-
-      letter:
-        selectedQuestion.letter ||
-        null,
-
-      validAnswers:
-        selectedQuestion.answers,
-
-      status:
-        'started',
-
-      winner:
-        '',
-
-      roundWinner:
-        '',
-
-      duration:
-        60,
-
-      scoreA:
-        Number(teamScores.A || 0),
-
-      scoreB:
-        Number(teamScores.B || 0),
-
-      // 🔥 حفظ الأسئلة المستخدمة في Firebase
-      usedQuestionIds:
-        nextUsedIds
-
+  <script>
+    // 1. إعدادات Firebase
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
-
-    // ---------------------------------
-    // أولاً نحذف إجابات الجولة القديمة
-    // ---------------------------------
-
-    await db.ref(
-      'games/answers'
-    ).remove();
-
-
-    // ---------------------------------
-    // ثم نكتب الجولة الجديدة
-    // ---------------------------------
-
-    await db.ref(
-      'games/gameState'
-    ).set(
-      newGameState
-    );
-
-
-    // حفظ نسخة محلية أيضًا
-    usedQuestionIds =
-      nextUsedIds;
-
-    saveLocalUsedQuestions();
-
-
-    // 🔥 لا نشغل المؤقت هنا
-    // مستمع Firebase هو المسؤول عنه
-    // حتى لا يبدأ مرتين
-
-  }
-
-  catch (error) {
-
-    console.error(
-      'خطأ في بدء الجولة:',
-      error
-    );
-
-
-    alert(
-      'حدث خطأ أثناء بدء الجولة. تأكدي من اتصال Firebase.'
-    );
-
-
-    currentGameStatus =
-      'waiting';
-
-  }
-
-  finally {
-
-    startingRound =
-      false;
-
-  }
-
-}
-
-
-// =========================================================
-// ⏱️ تشغيل المؤقت
-// =========================================================
-
-function startLocalTimer(
-  duration,
-  roundId
-) {
-
-  const numericRoundId =
-    Number(roundId);
-
-
-  // 🔥 إذا كان مؤقت نفس الجولة يعمل
-  // لا تعيده من البداية
-  if (
-    activeTimerRoundId ===
-      numericRoundId &&
-    isGameRunning
-  ) {
-
-    return;
-
-  }
-
-
-  clearInterval(
-    timerInterval
-  );
-
-
-  timerInterval =
-    null;
-
-
-  activeTimerRoundId =
-    numericRoundId;
-
-
-  isGameRunning =
-    true;
-
-
-  currentGameStatus =
-    'started';
-
-
-  roundWinnerLocked =
-    false;
-
-
-  finishLock =
-    false;
-
-
-  timerSeconds =
-    Number(duration) || 60;
-
-
-  const timerDisplay =
-    document.getElementById(
-      'timer-display'
-    );
-
-
-  timerDisplay.classList.remove(
-    'timer-warning'
-  );
-
-
-  updateTimerDisplay();
-
-
-  timerInterval =
-    setInterval(
-      () => {
-
-        if (
-          !isGameRunning ||
-          activeTimerRoundId !==
-            numericRoundId
-        ) {
-
-          return;
-
-        }
-
-
-        timerSeconds--;
-
-
-        updateTimerDisplay();
-
-
-        // آخر 10 ثواني
-        if (
-          timerSeconds <= 10 &&
-          timerSeconds > 0
-        ) {
-
-          timerDisplay.classList.add(
-            'timer-warning'
-          );
-
-
-          playSound('time');
-
-        }
-
-
-        if (
-          timerSeconds <= 0
-        ) {
-
-          handleTimeOut(
-            numericRoundId
-          );
-
-        }
-
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 2. بنك الأسئلة
+    const questionsBank = [
+      {
+        id: 1,
+        category: "أمن سيبراني",
+        question: "اذكر أحد عناصر مثلث السرية والنزاهة والتوفر (CIA Triad):",
+        answers: ["السرية", "النزاهة", "التوفر", "Confidentiality", "Integrity", "Availability"]
       },
-      1000
-    );
+      {
+        id: 2,
+        category: "شبكات",
+        question: "اذكر أحد بروتوكولات طبقة التطبيقات (Application Layer):",
+        answers: ["HTTP", "HTTPS", "FTP", "DNS", "DHCP", "SSH", "SMTP"]
+      },
+      {
+        id: 3,
+        category: "ثقافة عامة",
+        question: "اذكر إحدى قارات العالم:",
+        answers: ["آسيا", "أفريقيا", "أوروبا", "أمريكا الشمالية", "أمريكا الجنوبية", "أستراليا", "أنتاركتيكا"]
+      },
+      {
+        id: 4,
+        category: "أمن سيبراني",
+        question: "اذكر نوعاً من أنواع الهجمات السيبرانية الشهيرة:",
+        answers: ["التصيد", "التصيد الاحتيالي", "Phishing", "Ransomware", "فدية", "DDoS", "Man in the middle"]
+      }
+    ];
 
-}
+    // 3. حالة اللعبة
+    let currentRound = 1;
+    let scoreTeamA = 0;
+    let scoreTeamB = 0;
+    let countTeamA = 0;
+    let countTeamB = 0;
+    
+    let selectedCategory = "الكل";
+    let currentQuestion = null;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let isMuted = false;
 
+    // توليد الأكواد QR
+    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    
+    new QRCode(document.getElementById("qrcode-team-a"), {
+      text: `${baseUrl}/player.html?team=A`,
+      width: 100,
+      height: 100
+    });
 
-// =========================================================
-// ⏰ انتهاء الوقت
-// =========================================================
+    new QRCode(document.getElementById("qrcode-team-b"), {
+      text: `${baseUrl}/player.html?team=B`,
+      width: 100,
+      height: 100
+    });
 
-function handleTimeOut(
-  roundId
-) {
+    function selectCategory(cat, element) {
+      selectedCategory = cat;
+      const buttons = document.querySelectorAll('.cat-btn');
+      buttons.forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
+    }
 
-  if (
-    !isGameRunning ||
-    finishLock ||
-    currentGameStatus !==
-      'started'
-  ) {
+    // 4. بدء الجولة وتصفية البيانات القديمة من Firebase
+    async function startNextRound() {
+      // إلغاء الـ Timer القديم
+      clearInterval(timerInterval);
 
-    return;
+      // مسح الإجابات القديمة وحالة اللعبة السابقة لمنع التعليق
+      await db.ref("answers").remove();
+      await db.ref("gameState").remove();
 
-  }
+      document.getElementById("result-overlay").classList.remove("active");
 
-
-  finishLock = true;
-
-  roundWinnerLocked = true;
-
-  stopTimer();
-
-
-  db.ref(
-    'games/gameState'
-  ).transaction(
-    current => {
-
-      if (!current) {
-
-        return;
-
+      // تصفية الأسئلة
+      let filteredQuestions = questionsBank;
+      if (selectedCategory !== "الكل") {
+        filteredQuestions = questionsBank.filter(q => q.category === selectedCategory);
       }
 
-
-      if (
-        current.status !==
-        'started'
-      ) {
-
+      if (filteredQuestions.length === 0) {
+        alert("لا توجد أسئلة متوفرة في هذا القسم!");
         return;
-
       }
 
+      // اختيار سؤال عشوائي
+      const randomIndex = Math.floor(Math.random() * filteredQuestions.length);
+      currentQuestion = filteredQuestions[randomIndex];
 
-      if (
-        Number(current.roundId) !==
-        Number(roundId)
-      ) {
+      // إعادة ضبط الواجهة
+      document.getElementById("round-title").innerText = `الجولة ${currentRound}`;
+      document.getElementById("category-display").innerText = currentQuestion.category;
+      document.getElementById("question-display").innerText = currentQuestion.question;
 
-        return;
+      countTeamA = 0;
+      countTeamB = 0;
+      document.getElementById("count-team-a").innerText = `0 / 5`;
+      document.getElementById("count-team-b").innerText = `0 / 5`;
+      document.getElementById("list-team-a").innerHTML = "";
+      document.getElementById("list-team-b").innerHTML = "";
 
+      // تعيين حالة اللعبة الجديدة
+      await db.ref("gameState").set({
+        round: currentRound,
+        questionId: currentQuestion.id,
+        status: "active"
+      });
+
+      startTimer(60);
+    }
+
+    function startTimer(seconds) {
+      timeLeft = seconds;
+      const timerDisplay = document.getElementById("timer-display");
+      timerDisplay.classList.remove("timer-warning");
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        let mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        let secs = (timeLeft % 60).toString().padStart(2, '0');
+        timerDisplay.innerText = `${mins}:${secs}`;
+
+        if (timeLeft <= 10) {
+          timerDisplay.classList.add("timer-warning");
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          endRound("⏱️ انتهى الوقت!");
+        }
+      }, 1000);
+    }
+
+    // 5. استقبال الإجابات أثناء الجولة الفعالة فقط
+    db.ref("answers").on("child_added", (snapshot) => {
+      const data = snapshot.val();
+      if (!data || !currentQuestion) return;
+
+      const answerText = data.text ? data.text.trim() : "";
+      const team = data.team;
+
+      const isCorrect = currentQuestion.answers.some(
+        ans => ans.toLowerCase() === answerText.toLowerCase()
+      );
+
+      addAnswerToList(team, answerText, isCorrect);
+
+      if (isCorrect) {
+        if (team === "A") {
+          countTeamA++;
+          scoreTeamA += 10;
+          document.getElementById("count-team-a").innerText = `${countTeamA} / 5`;
+        } else if (team === "B") {
+          countTeamB++;
+          scoreTeamB += 10;
+          document.getElementById("count-team-b").innerText = `${countTeamB} / 5`;
+        }
+        updateScoreBoard();
       }
 
+      if (countTeamA >= 5 || countTeamB >= 5) {
+        clearInterval(timerInterval);
+        const winner = countTeamA >= 5 ? "الفريق (أ)" : "الفريق (ب)";
+        endRound(`🏆 فاز ${winner} في هذه الجولة!`);
+      }
 
-      return {
+      snapshot.ref.remove();
+    });
 
-        ...current,
-
-        status:
-          'finished',
-
-        roundWinner:
-          '',
-
-        winner:
-          '⏰ انتهى الوقت! لا يوجد فائز في هذه الجولة.'
-
-      };
-
-    }
-  )
-  .then(result => {
-
-    if (
-      result.committed
-    ) {
-
-      playSound('wrong');
-
+    function addAnswerToList(team, text, isCorrect) {
+      const listId = team === "A" ? "list-team-a" : "list-team-b";
+      const listEl = document.getElementById(listId);
+      
+      const item = document.createElement("div");
+      item.className = `answer-item ${isCorrect ? 'correct' : 'wrong'}`;
+      item.innerText = `${text} ${isCorrect ? '✓' : '✗'}`;
+      
+      listEl.appendChild(item);
+      listEl.scrollTop = listEl.scrollHeight;
     }
 
-    else {
-
-      finishLock = false;
-
-      roundWinnerLocked = false;
-
+    function updateScoreBoard() {
+      document.getElementById("score-team-a").innerText = `🔵 الفريق أ: ${scoreTeamA} نقطة`;
+      document.getElementById("score-team-b").innerText = `🔴 الفريق ب: ${scoreTeamB} نقطة`;
     }
 
-  })
-  .catch(error => {
+    function endRound(message) {
+      db.ref("gameState/status").set("ended");
 
-    console.error(
-      'خطأ في انتهاء الوقت:',
-      error
-    );
+      document.getElementById("winner-title-header").innerText = message;
+      document.getElementById("winner-text").innerText = "جاهزون للجولة القادمة؟";
+      document.getElementById("final-score").innerHTML = `
+        🔵 الفريق أ: ${scoreTeamA} نقطة
+        <br>
+        🔴 الفريق ب: ${scoreTeamB} نقطة
+      `;
 
-    finishLock = false;
-
-    roundWinnerLocked = false;
-
-  });
-
-}
-
-
-// =========================================================
-// ⏱️ تحديث المؤقت
-// =========================================================
-
-function updateTimerDisplay() {
-
-  const mins =
-    Math.floor(
-      timerSeconds / 60
-    )
-    .toString()
-    .padStart(
-      2,
-      '0'
-    );
-
-
-  const secs =
-    (
-      timerSeconds % 60
-    )
-    .toString()
-    .padStart(
-      2,
-      '0'
-    );
-
-
-  document.getElementById(
-    'timer-display'
-  ).innerText =
-    `${mins}:${secs}`;
-
-}
-
-
-// =========================================================
-// 🛑 إيقاف المؤقت
-// =========================================================
-
-function stopTimer() {
-
-  isGameRunning =
-    false;
-
-
-  clearInterval(
-    timerInterval
-  );
-
-
-  timerInterval =
-    null;
-
-
-  activeTimerRoundId =
-    null;
-
-
-  document
-    .getElementById(
-      'timer-display'
-    )
-    .classList.remove(
-      'timer-warning'
-    );
-
-}
-
-
-// =========================================================
-// 🆕 تشغيل اللعبة لأول مرة
-// =========================================================
-
-async function initializeGame() {
-
-  updateScoreBoard();
-
-  updateTimerDisplay();
-
-
-  // ---------------------------------
-  // إذا طلبت لعبة جديدة
-  // ---------------------------------
-
-  if (forceNewGame) {
-
-    try {
-
-      await resetGame();
-
-
-      // إزالة ?newgame=1 من الرابط
-      // بدون إعادة تحميل الصفحة
-      window.history.replaceState(
-        {},
-        document.title,
-        window.location.pathname
-      );
-
+      document.getElementById("result-overlay").classList.add("active");
+      currentRound++;
     }
 
-    catch (error) {
-
-      console.error(
-        'خطأ في إعادة اللعبة:',
-        error
-      );
-
-      alert(
-        'تعذر إنشاء لعبة جديدة.'
-      );
-
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById("mute-button").innerText = isMuted ? "🔇" : "🔊";
     }
-
-  }
-
-
-  // ---------------------------------
-  // بعد التأكد من الحالة
-  // نبدأ مستمع Firebase
-  // ---------------------------------
-
-  bindFirebaseListeners();
-
-}
-
-
-// =========================================================
-// 🎬 تشغيل
-// =========================================================
-
-initializeGame();
-
-</script>
-
+  </script>
 </body>
 </html>
