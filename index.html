@@ -70,6 +70,7 @@
       0%, 100% {
         transform: scale(1);
       }
+
       50% {
         transform: scale(1.05);
       }
@@ -361,7 +362,6 @@
 
   </div>
 
-
   <div class="score-board">
 
     <div class="score-box score-a" id="score-team-a">
@@ -373,7 +373,6 @@
     </div>
 
   </div>
-
 
   <div class="question-card">
 
@@ -387,9 +386,7 @@
 
   </div>
 
-
   <div class="arena-container">
-
 
     <div class="team-card team-a">
 
@@ -405,23 +402,17 @@
 
       </div>
 
-
       <div class="qr-title">
         امسح للولوج كـ (الفريق أ)
       </div>
 
-
       <div class="qr-box">
-
         <div id="qrcode-team-a"></div>
-
       </div>
-
 
       <div class="answers-list" id="list-team-a"></div>
 
     </div>
-
 
     <div class="team-card team-b">
 
@@ -437,25 +428,19 @@
 
       </div>
 
-
       <div class="qr-title">
         امسح للولوج كـ (الفريق ب)
       </div>
 
-
       <div class="qr-box">
-
         <div id="qrcode-team-b"></div>
-
       </div>
-
 
       <div class="answers-list" id="list-team-b"></div>
 
     </div>
 
   </div>
-
 
   <div class="result-overlay active" id="result-overlay">
 
@@ -467,20 +452,17 @@
       اختر القسم وابدأ الجولة الأولى!
     </div>
 
-
     <div class="final-score" id="final-score">
       🔵 الفريق أ: 0 نقطة
       <br>
       🔴 الفريق ب: 0 نقطة
     </div>
 
-
     <div class="category-selection">
 
       <div class="category-title">
         اختر قسم الجولة القادمة:
       </div>
-
 
       <div class="category-buttons" id="category-buttons-container">
 
@@ -512,13 +494,11 @@
 
     </div>
 
-
     <button class="btn-next-round" onclick="startNextRound()">
       🚀 بدء الجولة الآن
     </button>
 
   </div>
-
 
   <button class="mute-button" id="mute-button" onclick="toggleMute()">
     🔊
@@ -527,26 +507,20 @@
 
 <script>
 
-
 // =========================================================
-// 🔥 FIREBASE — لم يتم تغييره
+// 🔥 FIREBASE — لا تغيّر هذه الإعدادات
 // =========================================================
 
 const firebaseConfig = {
-
   databaseURL:
     "https://speed-game-reem-default-rtdb.firebaseio.com/",
-
   projectId:
     "speed-game-reem"
-
 };
-
 
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.database();
-
 
 
 // =========================================================
@@ -1897,7 +1871,7 @@ const questionsBank = [
     letter:"ج",
     answers:[
       "جمل","جبل","جزر","جوال","جرس",
-      "جريدة","جوهرة","جدار","جمعة"
+      "جريدة","جوهرة","جدار","جمعة","جندي"
     ]
   },
 
@@ -1952,7 +1926,7 @@ const questionsBank = [
     letter:"ه",
     answers:[
       "هلال","هاتف","هدية","هرم","هدهد",
-      "هواء","هند","هرة","هروب"
+      "هواء","هند","هرة","هروب","هندسة"
     ]
   },
 
@@ -2025,17 +1999,14 @@ const questionsBank = [
 ];
 
 
-
 // =========================================================
 // ⚙️ متغيرات اللعبة
 // =========================================================
 
 let currentValidAnswers = [];
-
 let currentLetter = null;
 
 let timerSeconds = 60;
-
 let timerInterval = null;
 
 let isGameRunning = false;
@@ -2052,17 +2023,37 @@ let teamScores = {
 };
 
 let roundWinnerLocked = false;
+let activeTimerRoundId = null;
 
-let soundMuted = false;
+let finishLock = false;
+let startingRound = false;
 
+let currentGameStatus = 'waiting';
 
 
 // =========================================================
-// 🔊 نظام الأصوات
+// 🔊 الصوت
 // =========================================================
 
-const audioContext =
-  new (window.AudioContext || window.webkitAudioContext)();
+let soundMuted =
+  localStorage.getItem('speedGameMuted') === 'true';
+
+let audioContext = null;
+
+
+function getAudioContext() {
+
+  if (!audioContext) {
+
+    audioContext =
+      new (window.AudioContext ||
+      window.webkitAudioContext)();
+
+  }
+
+  return audioContext;
+
+}
 
 
 function playSound(type) {
@@ -2071,25 +2062,23 @@ function playSound(type) {
 
   try {
 
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
+    const ctx = getAudioContext();
+
+    if (ctx.state === 'suspended') {
+      ctx.resume();
     }
 
     const oscillator =
-      audioContext.createOscillator();
+      ctx.createOscillator();
 
     const gain =
-      audioContext.createGain();
+      ctx.createGain();
 
     oscillator.connect(gain);
-
-    gain.connect(audioContext.destination);
-
+    gain.connect(ctx.destination);
 
     let frequency = 500;
-
     let duration = 0.12;
-
 
     if (type === 'correct') {
       frequency = 700;
@@ -2111,28 +2100,27 @@ function playSound(type) {
       duration = 0.15;
     }
 
-
     oscillator.frequency.value = frequency;
 
     gain.gain.setValueAtTime(
       0.001,
-      audioContext.currentTime
+      ctx.currentTime
     );
 
     gain.gain.exponentialRampToValueAtTime(
       0.2,
-      audioContext.currentTime + 0.01
+      ctx.currentTime + 0.01
     );
 
     gain.gain.exponentialRampToValueAtTime(
       0.001,
-      audioContext.currentTime + duration
+      ctx.currentTime + duration
     );
 
     oscillator.start();
 
     oscillator.stop(
-      audioContext.currentTime + duration
+      ctx.currentTime + duration
     );
 
   } catch (e) {}
@@ -2144,15 +2132,27 @@ function toggleMute() {
 
   soundMuted = !soundMuted;
 
-  document.getElementById('mute-button').innerText =
+  localStorage.setItem(
+    'speedGameMuted',
+    soundMuted
+  );
+
+  document.getElementById(
+    'mute-button'
+  ).innerText =
     soundMuted ? '🔇' : '🔊';
 
 }
 
 
+document.getElementById(
+  'mute-button'
+).innerText =
+  soundMuted ? '🔇' : '🔊';
+
 
 // =========================================================
-// 📱 QR
+// 📱 QR — نفس الطريقة الأصلية
 // =========================================================
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -2163,30 +2163,27 @@ window.addEventListener('DOMContentLoaded', () => {
       window.location.href.lastIndexOf('/')
     );
 
-
   new QRCode(
     document.getElementById("qrcode-team-a"),
     {
       text:
         `${baseUrl}/answer.html?team=A`,
-      width:110,
-      height:110
+      width: 110,
+      height: 110
     }
   );
-
 
   new QRCode(
     document.getElementById("qrcode-team-b"),
     {
       text:
         `${baseUrl}/answer.html?team=B`,
-      width:110,
-      height:110
+      width: 110,
+      height: 110
     }
   );
 
 });
-
 
 
 // =========================================================
@@ -2197,21 +2194,21 @@ function selectCategory(cat) {
 
   selectedCategory = cat;
 
-
   const buttons =
     document.querySelectorAll('.cat-btn');
-
 
   buttons.forEach(btn => {
 
     btn.classList.remove('selected');
 
-
     if (
-      btn.innerText.includes(cat) ||
       (
         cat === 'الكل' &&
         btn.innerText.includes('عشوائي')
+      ) ||
+      (
+        cat !== 'الكل' &&
+        btn.innerText.includes(cat)
       )
     ) {
 
@@ -2224,7 +2221,6 @@ function selectCategory(cat) {
 }
 
 
-
 // =========================================================
 // 🧹 توحيد الكتابة العربية
 // =========================================================
@@ -2234,41 +2230,18 @@ function normalizeText(text) {
   return String(text || '')
     .trim()
     .toLowerCase()
-
-    // إزالة التشكيل
     .replace(/[\u064B-\u065F\u0670]/g, '')
-
-    // توحيد الهمزات
     .replace(/[إأآٱ]/g, 'ا')
-
-    // توحيد الألف المقصورة
     .replace(/ى/g, 'ي')
-
-    // توحيد التاء المربوطة
     .replace(/ة/g, 'ه')
-
-    // توحيد الهمزة على الواو
     .replace(/ؤ/g, 'و')
-
-    // توحيد الهمزة على الياء
     .replace(/ئ/g, 'ي')
-
-    // إزالة التطويل
     .replace(/ـ/g, '')
-
-    // إزالة الرموز
     .replace(/[^\u0600-\u06FFa-zA-Z0-9]/g, '')
-
-    // إزالة ال التعريف
     .replace(/^ال/, '');
 
 }
 
-
-
-// =========================================================
-// 🔤 الحرف
-// =========================================================
 
 function normalizeLetter(letter) {
 
@@ -2277,61 +2250,198 @@ function normalizeLetter(letter) {
 }
 
 
-
 // =========================================================
-// 🏆 تحديث لوحة النقاط
+// 🏆 لوحة النقاط
 // =========================================================
 
 function updateScoreBoard() {
 
-  document.getElementById('score-team-a').innerText =
+  document.getElementById(
+    'score-team-a'
+  ).innerText =
     `🔵 الفريق أ: ${teamScores.A} نقطة`;
 
-  document.getElementById('score-team-b').innerText =
+  document.getElementById(
+    'score-team-b'
+  ).innerText =
     `🔴 الفريق ب: ${teamScores.B} نقطة`;
 
 }
 
 
+// =========================================================
+// 💾 الأسئلة المستخدمة
+// =========================================================
+
+function loadLocalUsedQuestions() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        'speedGameUsedQuestions'
+      );
+
+    if (!saved) return [];
+
+    const parsed =
+      JSON.parse(saved);
+
+    if (Array.isArray(parsed)) {
+
+      return parsed
+        .map(Number)
+        .filter(Number.isFinite);
+
+    }
+
+  } catch (e) {}
+
+  return [];
+
+}
+
+
+function saveLocalUsedQuestions() {
+
+  try {
+
+    localStorage.setItem(
+      'speedGameUsedQuestions',
+      JSON.stringify(usedQuestionIds)
+    );
+
+  } catch (e) {}
+
+}
+
 
 // =========================================================
-// 🏆 قراءة حالة اللعبة
+// 🧹 الحالة الافتراضية
 // =========================================================
 
-db.ref('games/gameState').on('value', snapshot => {
+function getEmptyGameState() {
 
-  const data = snapshot.val();
+  return {
 
-  if (!data) return;
+    roundId: 0,
+
+    currentQuestion: '',
+
+    category: '',
+
+    letter: null,
+
+    validAnswers: [],
+
+    status: 'waiting',
+
+    winner: '',
+
+    roundWinner: '',
+
+    duration: 60,
+
+    scoreA: 0,
+
+    scoreB: 0,
+
+    usedQuestionIds: []
+
+  };
+
+}
+
+
+// =========================================================
+// 🆕 بدء لعبة جديدة بالكامل
+// =========================================================
+
+async function resetGame() {
+
+  stopTimer();
+
+  currentGameStatus = 'waiting';
+
+  currentRoundId = 0;
+
+  currentValidAnswers = [];
+
+  currentLetter = null;
+
+  usedQuestionIds = [];
+
+  teamScores = {
+    A: 0,
+    B: 0
+  };
+
+  roundWinnerLocked = false;
+
+  finishLock = false;
+
+  startingRound = false;
+
+  saveLocalUsedQuestions();
+
+  await db.ref(
+    'games/answers'
+  ).remove();
+
+  await db.ref(
+    'games/gameState'
+  ).set(
+    getEmptyGameState()
+  );
+
+}
+
+
+// =========================================================
+// 🆕 التحقق من طلب لعبة جديدة
+// =========================================================
+
+const forceNewGame =
+  new URLSearchParams(
+    window.location.search
+  ).get('newgame') === '1';
+
+
+// =========================================================
+// 🎯 تطبيق حالة Firebase
+// =========================================================
+
+function applyGameState(data) {
+
+  if (!data) {
+
+    data = getEmptyGameState();
+
+  }
 
 
   currentRoundId =
-    data.roundId || 1;
+    Number(data.roundId || 0);
 
 
-  document.getElementById('question-display').innerText =
-    data.currentQuestion ||
-    "بانتظار السؤال...";
-
-
-  document.getElementById('category-display').innerText =
-    data.category ||
-    "عام";
-
-
-  document.getElementById('round-title').innerText =
-    `الجولة ${currentRoundId}`;
+  currentGameStatus =
+    data.status || 'waiting';
 
 
   currentValidAnswers =
-    data.validAnswers || [];
+    Array.isArray(data.validAnswers)
+      ? data.validAnswers
+      : (
+          data.validAnswers
+            ? Object.values(data.validAnswers)
+            : []
+        );
 
 
   currentLetter =
     data.letter || null;
 
 
-  // استرجاع النقاط من Firebase
   teamScores.A =
     Number(data.scoreA || 0);
 
@@ -2339,22 +2449,89 @@ db.ref('games/gameState').on('value', snapshot => {
     Number(data.scoreB || 0);
 
 
+  // 🔥 أهم تعديل:
+  // قراءة الأسئلة المستخدمة من Firebase
+  if (
+    Array.isArray(data.usedQuestionIds)
+  ) {
+
+    usedQuestionIds =
+      data.usedQuestionIds
+        .map(Number)
+        .filter(Number.isFinite);
+
+    saveLocalUsedQuestions();
+
+  }
+
+  else {
+
+    // دعم الحالة القديمة
+    const localUsed =
+      loadLocalUsedQuestions();
+
+    usedQuestionIds =
+      localUsed;
+
+  }
+
+
   updateScoreBoard();
 
 
-  if (data.status === 'started') {
+  const roundDisplay =
+    currentRoundId > 0
+      ? currentRoundId
+      : 1;
+
+
+  document.getElementById(
+    'round-title'
+  ).innerText =
+    `الجولة ${roundDisplay}`;
+
+
+  if (
+    currentGameStatus ===
+    'started'
+  ) {
+
+    document.getElementById(
+      'question-display'
+    ).innerText =
+      data.currentQuestion ||
+      'بانتظار السؤال...';
+
+
+    document.getElementById(
+      'category-display'
+    ).innerText =
+      data.category ||
+      'عام';
+
+
+    document
+      .getElementById(
+        'result-overlay'
+      )
+      .classList.remove(
+        'active'
+      );
+
 
     roundWinnerLocked = false;
 
-    document
-      .getElementById('result-overlay')
-      .classList.remove('active');
 
-
-    if (!isGameRunning) {
+    // 🔥 لا تعيد تشغيل المؤقت
+    // إذا كانت نفس الجولة
+    if (
+      activeTimerRoundId !==
+      currentRoundId
+    ) {
 
       startLocalTimer(
-        data.duration || 60
+        Number(data.duration || 60),
+        currentRoundId
       );
 
     }
@@ -2362,103 +2539,430 @@ db.ref('games/gameState').on('value', snapshot => {
   }
 
 
-  else if (data.status === 'finished') {
+  else if (
+    currentGameStatus ===
+    'finished'
+  ) {
 
     stopTimer();
+
+    document.getElementById(
+      'question-display'
+    ).innerText =
+      data.currentQuestion ||
+      'انتهت الجولة.';
+
+
+    document.getElementById(
+      'category-display'
+    ).innerText =
+      data.category ||
+      'القسم';
 
 
     showRoundResult(data);
 
   }
 
-});
 
+  else {
+
+    stopTimer();
+
+    document.getElementById(
+      'question-display'
+    ).innerText =
+      'اضغط على بدء اللعبة للبدء...';
+
+
+    document.getElementById(
+      'category-display'
+    ).innerText =
+      'القسم';
+
+
+    document
+      .getElementById(
+        'result-overlay'
+      )
+      .classList.add(
+        'active'
+      );
+
+    document.getElementById(
+      'winner-title-header'
+    ).innerText =
+      '🎮 مرحباً بكم في تحدي السرعة';
+
+
+    document.getElementById(
+      'winner-text'
+    ).innerText =
+      'اختر القسم وابدأ الجولة الأولى!';
+
+
+    document.getElementById(
+      'final-score'
+    ).innerHTML =
+      `🔵 الفريق أ: ${teamScores.A} نقطة<br>
+       🔴 الفريق ب: ${teamScores.B} نقطة`;
+
+  }
+
+}
 
 
 // =========================================================
-// 🎉 نتيجة الجولة
+// 🎯 تشغيل مستمع Firebase
+// =========================================================
+
+function bindFirebaseListeners() {
+
+  // ---------------------------------
+  // حالة اللعبة
+  // ---------------------------------
+
+  db.ref(
+    'games/gameState'
+  ).on(
+    'value',
+    snapshot => {
+
+      const data =
+        snapshot.val();
+
+      applyGameState(data);
+
+    }
+  );
+
+
+  // ---------------------------------
+  // إجابات الفريق A
+  // ---------------------------------
+
+  db.ref(
+    'games/answers/teamA'
+  ).on(
+    'value',
+    snapshot => {
+
+      processAnswers(
+        'A',
+        readAnswers(
+          snapshot
+        )
+      );
+
+    }
+  );
+
+
+  // ---------------------------------
+  // إجابات الفريق B
+  // ---------------------------------
+
+  db.ref(
+    'games/answers/teamB'
+  ).on(
+    'value',
+    snapshot => {
+
+      processAnswers(
+        'B',
+        readAnswers(
+          snapshot
+        )
+      );
+
+    }
+  );
+
+}
+
+
+// =========================================================
+// 📥 قراءة الإجابات وترتيبها
+// =========================================================
+
+function readAnswers(snapshot) {
+
+  const value =
+    snapshot.val();
+
+  if (!value) {
+    return [];
+  }
+
+
+  let answers =
+    Array.isArray(value)
+      ? value
+      : Object.values(value);
+
+
+  answers =
+    answers.filter(
+      item =>
+        item &&
+        typeof item === 'object'
+    );
+
+
+  answers.sort(
+    (a, b) => {
+
+      return (
+        Number(a.timestamp || 0) -
+        Number(b.timestamp || 0)
+      );
+
+    }
+  );
+
+
+  return answers;
+
+}
+
+
+// =========================================================
+// 🎉 عرض النتيجة
 // =========================================================
 
 function showRoundResult(data) {
 
+  const winnerTitle =
+    data.winner ||
+    '🏁 انتهت الجولة';
+
+
   document.getElementById(
     'winner-title-header'
   ).innerText =
-    data.winner || "🏁 انتهت الجولة";
+    winnerTitle;
 
 
-  document.getElementById(
-    'winner-text'
-  ).innerText =
-    "نتيجة الجولة";
+  if (
+    data.roundWinner === 'A'
+  ) {
+
+    document.getElementById(
+      'winner-text'
+    ).innerText =
+      '🎉 الفريق أ فاز بهذه الجولة!';
+
+  }
+
+  else if (
+    data.roundWinner === 'B'
+  ) {
+
+    document.getElementById(
+      'winner-text'
+    ).innerText =
+      '🎉 الفريق ب فاز بهذه الجولة!';
+
+  }
+
+  else {
+
+    document.getElementById(
+      'winner-text'
+    ).innerText =
+      '⏰ انتهى الوقت دون فائز.';
+
+  }
+
+
+  const finalScoreA =
+    Number(
+      data.scoreA ??
+      teamScores.A
+    );
+
+
+  const finalScoreB =
+    Number(
+      data.scoreB ??
+      teamScores.B
+    );
 
 
   document.getElementById(
     'final-score'
   ).innerHTML =
 
-    `🔵 الفريق أ: ${teamScores.A} نقطة<br>
-     🔴 الفريق ب: ${teamScores.B} نقطة`;
+    `🔵 الفريق أ: ${finalScoreA} نقطة<br>
+     🔴 الفريق ب: ${finalScoreB} نقطة`;
 
 
   document
-    .getElementById('result-overlay')
-    .classList.add('active');
+    .getElementById(
+      'result-overlay'
+    )
+    .classList.add(
+      'active'
+    );
 
 }
 
 
-
 // =========================================================
-// 🔵 إجابات الفريق أ
-// =========================================================
+// 🧠 هل الإجابة صحيحة؟
+/* ======================================================== */
 
-db.ref('games/answers/teamA').on('value', snapshot => {
+function isAnswerCorrect(answer) {
 
-  processAnswers(
-    'A',
-    snapshot.val()
-      ? Object.values(snapshot.val())
-      : []
+  const cleanText =
+    normalizeText(answer);
+
+
+  if (!cleanText) {
+    return false;
+  }
+
+
+  // 🔤 سؤال الحروف
+  if (currentLetter) {
+
+    const normalizedLetter =
+      normalizeLetter(
+        currentLetter
+      );
+
+
+    const startsWithLetter =
+      cleanText.startsWith(
+        normalizedLetter
+      );
+
+
+    const inBank =
+      currentValidAnswers.some(
+        valid => {
+
+          return (
+            normalizeText(valid) ===
+            cleanText
+          );
+
+        }
+      );
+
+
+    return (
+      startsWithLetter &&
+      inBank
+    );
+
+  }
+
+
+  // 📝 سؤال عادي
+  return currentValidAnswers.some(
+    valid => {
+
+      return (
+        normalizeText(valid) ===
+        cleanText
+      );
+
+    }
   );
 
-});
-
+}
 
 
 // =========================================================
-// 🔴 إجابات الفريق ب
+// 🛡️ إنشاء عنصر الإجابة
 // =========================================================
 
-db.ref('games/answers/teamB').on('value', snapshot => {
+function createAnswerElement(
+  index,
+  rawText,
+  correct
+) {
 
-  processAnswers(
-    'B',
-    snapshot.val()
-      ? Object.values(snapshot.val())
-      : []
+  const item =
+    document.createElement('div');
+
+
+  item.className =
+    correct
+      ? 'answer-item correct'
+      : 'answer-item wrong';
+
+
+  const left =
+    document.createElement('span');
+
+
+  const number =
+    document.createElement('b');
+
+
+  number.innerText =
+    `${index}. `;
+
+
+  left.appendChild(number);
+
+
+  left.appendChild(
+    document.createTextNode(
+      rawText
+    )
   );
 
-});
 
+  const right =
+    document.createElement('span');
+
+
+  right.innerText =
+    correct
+      ? '✅ صحيحة'
+      : '❌ خاطئة';
+
+
+  item.appendChild(left);
+
+  item.appendChild(right);
+
+
+  return item;
+
+}
 
 
 // =========================================================
-// ✅ فحص الإجابات
+// ✅ معالجة الإجابات
 // =========================================================
 
-function processAnswers(team, answers) {
+function processAnswers(
+  team,
+  answers
+) {
 
   const listElement =
     team === 'A'
-      ? document.getElementById('list-team-a')
-      : document.getElementById('list-team-b');
+      ? document.getElementById(
+          'list-team-a'
+        )
+      : document.getElementById(
+          'list-team-b'
+        );
 
 
   const countElement =
     team === 'A'
-      ? document.getElementById('count-team-a')
-      : document.getElementById('count-team-b');
+      ? document.getElementById(
+          'count-team-a'
+        )
+      : document.getElementById(
+          'count-team-b'
+        );
 
 
   listElement.innerHTML = '';
@@ -2467,137 +2971,91 @@ function processAnswers(team, answers) {
   let correctCount = 0;
 
 
-  const usedWords = new Set();
+  const usedWords =
+    new Set();
 
 
-  answers.forEach((ans, idx) => {
+  answers.forEach(
+    (ans, idx) => {
 
-    const item =
-      document.createElement('div');
-
-
-    const rawText =
-      String(ans.text || '').trim();
-
-
-    const cleanText =
-      normalizeText(rawText);
+      const rawText =
+        String(
+          ans?.text || ''
+        ).trim();
 
 
-    let isCorrect = false;
-
-
-    // ============================
-    // 🔤 تحدي الحروف
-    // ============================
-
-    if (currentLetter) {
-
-      const normalizedLetter =
-        normalizeLetter(currentLetter);
-
-
-      const startsWithLetter =
-        cleanText.startsWith(
-          normalizedLetter
+      const cleanText =
+        normalizeText(
+          rawText
         );
 
 
-      const inBank =
-        currentValidAnswers.some(v => {
-
-          return normalizeText(v) === cleanText;
-
-        });
+      const correct =
+        isAnswerCorrect(
+          rawText
+        );
 
 
-      isCorrect =
-        startsWithLetter &&
-        inBank;
-
-    }
-
-
-    // ============================
-    // 📝 السؤال العادي
-    // ============================
-
-    else {
-
-      isCorrect =
-        currentValidAnswers.some(v => {
-
-          return normalizeText(v) === cleanText;
-
-        });
-
-    }
+      const notDuplicate =
+        cleanText.length > 0 &&
+        !usedWords.has(
+          cleanText
+        );
 
 
-    const isNotDuplicate =
-      !usedWords.has(cleanText);
+      const finalCorrect =
+        correct &&
+        notDuplicate;
 
 
-    if (
-      isCorrect &&
-      isNotDuplicate &&
-      cleanText.length > 0
-    ) {
+      if (finalCorrect) {
 
-      correctCount++;
+        correctCount++;
 
-      usedWords.add(cleanText);
+        usedWords.add(
+          cleanText
+        );
 
-
-      item.className =
-        'answer-item correct';
+      }
 
 
-      item.innerHTML =
-        `<span>
-          <b>${idx + 1}.</b> ${escapeHTML(rawText)}
-        </span>
-        <span>✅ صحيحة</span>`;
+      const item =
+        createAnswerElement(
+          idx + 1,
+          rawText,
+          finalCorrect
+        );
+
+
+      listElement.appendChild(
+        item
+      );
 
     }
-
-    else {
-
-      item.className =
-        'answer-item wrong';
-
-
-      item.innerHTML =
-        `<span>
-          <b>${idx + 1}.</b> ${escapeHTML(rawText)}
-        </span>
-        <span>❌ خاطئة</span>`;
-
-    }
-
-
-    listElement.appendChild(item);
-
-  });
+  );
 
 
   countElement.innerText =
     `${correctCount} / 5`;
 
 
-  // ============================
-  // 🏆 الفوز
-  // ============================
+  // لا يمكن إعلان فائز
+  // إذا لم تكن الجولة فعالة
+  if (
+    !isGameRunning ||
+    currentGameStatus !== 'started'
+  ) {
+
+    return;
+
+  }
+
 
   if (
     correctCount >= 5 &&
-    isGameRunning &&
-    !roundWinnerLocked
+    !roundWinnerLocked &&
+    !finishLock
   ) {
-
-    roundWinnerLocked = true;
-
-    stopTimer();
 
     finishRound(team);
 
@@ -2606,29 +3064,33 @@ function processAnswers(team, answers) {
 }
 
 
-
 // =========================================================
-// 🛡️ حماية عرض النص
-// =========================================================
-
-function escapeHTML(text) {
-
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-
-}
-
-
-
-// =========================================================
-// 🏆 إنهاء الجولة
+// 🏆 إنهاء الجولة — Transaction آمن
 // =========================================================
 
 function finishRound(team) {
+
+  if (
+    finishLock ||
+    !isGameRunning ||
+    currentGameStatus !== 'started'
+  ) {
+
+    return;
+
+  }
+
+
+  finishLock = true;
+
+  roundWinnerLocked = true;
+
+  const winningRoundId =
+    currentRoundId;
+
+
+  stopTimer();
+
 
   const winnerName =
     team === 'A'
@@ -2636,195 +3098,453 @@ function finishRound(team) {
       : 'الفريق ب (الأحمر)';
 
 
-  const oldScore =
-    teamScores[team];
+  db.ref(
+    'games/gameState'
+  ).transaction(
+    current => {
+
+      if (!current) {
+
+        return;
+
+      }
 
 
-  const newScore =
-    oldScore + 1;
+      // إذا فاز فريق قبله
+      if (
+        current.status !==
+        'started'
+      ) {
+
+        return;
+
+      }
 
 
-  teamScores[team] =
-    newScore;
+      // حماية من الجولة القديمة
+      if (
+        Number(current.roundId) !==
+        Number(winningRoundId)
+      ) {
+
+        return;
+
+      }
 
 
-  updateScoreBoard();
+      const scoreA =
+        Number(
+          current.scoreA || 0
+        );
 
 
-  playSound('win');
+      const scoreB =
+        Number(
+          current.scoreB || 0
+        );
 
 
-  db.ref('games/gameState').transaction(current => {
+      return {
 
-    if (!current) return current;
+        ...current,
 
+        status:
+          'finished',
 
-    if (current.status === 'finished') {
-      return;
+        roundWinner:
+          team,
+
+        winner:
+          `🎉 فوز بالسرعة! ${winnerName} حقق 5 إجابات صحيحة أولاً!`,
+
+        scoreA:
+          team === 'A'
+            ? scoreA + 1
+            : scoreA,
+
+        scoreB:
+          team === 'B'
+            ? scoreB + 1
+            : scoreB
+
+      };
+
+    }
+  )
+  .then(result => {
+
+    if (
+      result.committed
+    ) {
+
+      playSound('win');
+
     }
 
+    else {
 
-    return {
+      finishLock = false;
 
-      ...current,
+      roundWinnerLocked = false;
 
-      status:'finished',
+    }
 
-      winner:
-        `🎉 فوز بالسرعة! ${winnerName} حقق 5 إجابات صحيحة أولاً!`,
+  })
+  .catch(error => {
 
-      scoreA:
-        team === 'A'
-          ? newScore
-          : Number(current.scoreA || 0),
+    console.error(
+      'خطأ في إنهاء الجولة:',
+      error
+    );
 
-      scoreB:
-        team === 'B'
-          ? newScore
-          : Number(current.scoreB || 0)
+    finishLock = false;
 
-    };
+    roundWinnerLocked = false;
 
   });
 
 }
 
 
-
 // =========================================================
-// 🚀 الجولة التالية
+// 🚀 بدء الجولة التالية
 // =========================================================
 
-function startNextRound() {
+async function startNextRound() {
 
-  roundWinnerLocked = false;
-
-
-  let availableQuestions =
-    questionsBank.filter(
-      q => !usedQuestionIds.includes(q.id)
-    );
-
-
-  if (selectedCategory !== 'الكل') {
-
-    availableQuestions =
-      availableQuestions.filter(
-        q =>
-          q.category === selectedCategory
-      );
-
-  }
-
-
-  // إذا انتهت أسئلة القسم
-  if (availableQuestions.length === 0) {
-
-    usedQuestionIds = [];
-
-
-    availableQuestions =
-      questionsBank.filter(
-        q =>
-          selectedCategory === 'الكل' ||
-          q.category === selectedCategory
-      );
-
-  }
-
-
-  if (!availableQuestions.length) {
-
-    alert('لا توجد أسئلة متاحة.');
+  if (
+    isGameRunning ||
+    startingRound
+  ) {
 
     return;
 
   }
 
 
-  const selectedQuestion =
-    availableQuestions[
-      Math.floor(
-        Math.random() *
-        availableQuestions.length
-      )
-    ];
+  startingRound = true;
+
+  finishLock = false;
+
+  roundWinnerLocked = false;
+
+  currentGameStatus =
+    'transitioning';
 
 
-  usedQuestionIds.push(
-    selectedQuestion.id
-  );
+  stopTimer();
 
 
-  // مسح إجابات الجولة السابقة
-  db.ref('games/answers').remove();
+  try {
+
+    // ---------------------------------
+    // الأسئلة المتاحة حسب القسم
+    // ---------------------------------
+
+    const categoryQuestions =
+      questionsBank.filter(
+        q => {
+
+          return (
+            selectedCategory ===
+              'الكل' ||
+            q.category ===
+              selectedCategory
+          );
+
+        }
+      );
 
 
-  const nextRound =
-    currentRoundId + 1;
+    if (
+      categoryQuestions.length ===
+      0
+    ) {
+
+      alert(
+        'لا توجد أسئلة في هذا القسم.'
+      );
+
+      currentGameStatus =
+        'waiting';
+
+      return;
+
+    }
 
 
-  db.ref('games/gameState').set({
+    // ---------------------------------
+    // الأسئلة غير المستخدمة
+    // ---------------------------------
 
-    roundId:
-      nextRound,
-
-    currentQuestion:
-      selectedQuestion.question,
-
-    category:
-      selectedQuestion.category,
-
-    letter:
-      selectedQuestion.letter || null,
-
-    validAnswers:
-      selectedQuestion.answers,
-
-    status:
-      'started',
-
-    winner:
-      '',
-
-    duration:
-      60,
-
-    scoreA:
-      teamScores.A,
-
-    scoreB:
-      teamScores.B
-
-  }).then(() => {
-
-    document
-      .getElementById('result-overlay')
-      .classList.remove('active');
+    const usedSet =
+      new Set(
+        usedQuestionIds.map(
+          Number
+        )
+      );
 
 
-    startLocalTimer(60);
+    let availableQuestions =
+      categoryQuestions.filter(
+        q =>
+          !usedSet.has(
+            Number(q.id)
+          )
+      );
 
-  });
+
+    // ---------------------------------
+    // إذا انتهى قسم معين
+    // نعيد أسئلته فقط
+    // ---------------------------------
+
+    if (
+      availableQuestions.length ===
+      0
+    ) {
+
+      const categoryIds =
+        new Set(
+          categoryQuestions.map(
+            q =>
+              Number(q.id)
+          )
+        );
+
+
+      usedQuestionIds =
+        usedQuestionIds.filter(
+          id =>
+            !categoryIds.has(
+              Number(id)
+            )
+        );
+
+
+      availableQuestions =
+        categoryQuestions.slice();
+
+    }
+
+
+    if (
+      availableQuestions.length ===
+      0
+    ) {
+
+      alert(
+        'لا توجد أسئلة متاحة.'
+      );
+
+      currentGameStatus =
+        'waiting';
+
+      return;
+
+    }
+
+
+    // ---------------------------------
+    // اختيار سؤال عشوائي
+    // ---------------------------------
+
+    const selectedQuestion =
+      availableQuestions[
+        Math.floor(
+          Math.random() *
+          availableQuestions.length
+        )
+      ];
+
+
+    // ---------------------------------
+    // إضافة السؤال إلى المستخدم
+    // ---------------------------------
+
+    const nextUsedIds =
+      Array.from(
+        new Set([
+          ...usedQuestionIds.map(
+            Number
+          ),
+          Number(
+            selectedQuestion.id
+          )
+        ])
+      );
+
+
+    const nextRound =
+      Number(currentRoundId || 0) +
+      1;
+
+
+    // ---------------------------------
+    // الحالة الجديدة
+    // ---------------------------------
+
+    const newGameState = {
+
+      roundId:
+        nextRound,
+
+      currentQuestion:
+        selectedQuestion.question,
+
+      category:
+        selectedQuestion.category,
+
+      letter:
+        selectedQuestion.letter ||
+        null,
+
+      validAnswers:
+        selectedQuestion.answers,
+
+      status:
+        'started',
+
+      winner:
+        '',
+
+      roundWinner:
+        '',
+
+      duration:
+        60,
+
+      scoreA:
+        Number(teamScores.A || 0),
+
+      scoreB:
+        Number(teamScores.B || 0),
+
+      // 🔥 حفظ الأسئلة المستخدمة في Firebase
+      usedQuestionIds:
+        nextUsedIds
+
+    };
+
+
+    // ---------------------------------
+    // أولاً نحذف إجابات الجولة القديمة
+    // ---------------------------------
+
+    await db.ref(
+      'games/answers'
+    ).remove();
+
+
+    // ---------------------------------
+    // ثم نكتب الجولة الجديدة
+    // ---------------------------------
+
+    await db.ref(
+      'games/gameState'
+    ).set(
+      newGameState
+    );
+
+
+    // حفظ نسخة محلية أيضًا
+    usedQuestionIds =
+      nextUsedIds;
+
+    saveLocalUsedQuestions();
+
+
+    // 🔥 لا نشغل المؤقت هنا
+    // مستمع Firebase هو المسؤول عنه
+    // حتى لا يبدأ مرتين
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'خطأ في بدء الجولة:',
+      error
+    );
+
+
+    alert(
+      'حدث خطأ أثناء بدء الجولة. تأكدي من اتصال Firebase.'
+    );
+
+
+    currentGameStatus =
+      'waiting';
+
+  }
+
+  finally {
+
+    startingRound =
+      false;
+
+  }
 
 }
 
 
-
 // =========================================================
-// ⏱️ المؤقت
+// ⏱️ تشغيل المؤقت
 // =========================================================
 
-function startLocalTimer(duration) {
+function startLocalTimer(
+  duration,
+  roundId
+) {
 
-  isGameRunning = true;
-
-  roundWinnerLocked = false;
-
-  timerSeconds = duration;
+  const numericRoundId =
+    Number(roundId);
 
 
-  clearInterval(timerInterval);
+  // 🔥 إذا كان مؤقت نفس الجولة يعمل
+  // لا تعيده من البداية
+  if (
+    activeTimerRoundId ===
+      numericRoundId &&
+    isGameRunning
+  ) {
+
+    return;
+
+  }
+
+
+  clearInterval(
+    timerInterval
+  );
+
+
+  timerInterval =
+    null;
+
+
+  activeTimerRoundId =
+    numericRoundId;
+
+
+  isGameRunning =
+    true;
+
+
+  currentGameStatus =
+    'started';
+
+
+  roundWinnerLocked =
+    false;
+
+
+  finishLock =
+    false;
+
+
+  timerSeconds =
+    Number(duration) || 60;
 
 
   const timerDisplay =
@@ -2842,72 +3562,168 @@ function startLocalTimer(duration) {
 
 
   timerInterval =
-    setInterval(() => {
+    setInterval(
+      () => {
 
-      if (!isGameRunning) return;
+        if (
+          !isGameRunning ||
+          activeTimerRoundId !==
+            numericRoundId
+        ) {
 
+          return;
 
-      timerSeconds--;
-
-
-      updateTimerDisplay();
-
-
-      if (
-        timerSeconds <= 10 &&
-        timerSeconds > 0
-      ) {
-
-        timerDisplay.classList.add(
-          'timer-warning'
-        );
+        }
 
 
-        playSound('time');
-
-      }
+        timerSeconds--;
 
 
-      if (timerSeconds <= 0) {
-
-        stopTimer();
+        updateTimerDisplay();
 
 
-        if (roundWinnerLocked) return;
+        // آخر 10 ثواني
+        if (
+          timerSeconds <= 10 &&
+          timerSeconds > 0
+        ) {
+
+          timerDisplay.classList.add(
+            'timer-warning'
+          );
 
 
-        roundWinnerLocked = true;
+          playSound('time');
+
+        }
 
 
-        db.ref('games/gameState').transaction(current => {
+        if (
+          timerSeconds <= 0
+        ) {
 
-          if (!current) return current;
+          handleTimeOut(
+            numericRoundId
+          );
 
+        }
 
-          if (current.status === 'finished') {
-            return;
-          }
-
-
-          return {
-
-            ...current,
-
-            status:'finished',
-
-            winner:
-              '⏰ انتهى الوقت! لا يوجد فائز في هذه الجولة.'
-
-          };
-
-        });
-
-      }
-
-    }, 1000);
+      },
+      1000
+    );
 
 }
 
+
+// =========================================================
+// ⏰ انتهاء الوقت
+// =========================================================
+
+function handleTimeOut(
+  roundId
+) {
+
+  if (
+    !isGameRunning ||
+    finishLock ||
+    currentGameStatus !==
+      'started'
+  ) {
+
+    return;
+
+  }
+
+
+  finishLock = true;
+
+  roundWinnerLocked = true;
+
+  stopTimer();
+
+
+  db.ref(
+    'games/gameState'
+  ).transaction(
+    current => {
+
+      if (!current) {
+
+        return;
+
+      }
+
+
+      if (
+        current.status !==
+        'started'
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        Number(current.roundId) !==
+        Number(roundId)
+      ) {
+
+        return;
+
+      }
+
+
+      return {
+
+        ...current,
+
+        status:
+          'finished',
+
+        roundWinner:
+          '',
+
+        winner:
+          '⏰ انتهى الوقت! لا يوجد فائز في هذه الجولة.'
+
+      };
+
+    }
+  )
+  .then(result => {
+
+    if (
+      result.committed
+    ) {
+
+      playSound('wrong');
+
+    }
+
+    else {
+
+      finishLock = false;
+
+      roundWinnerLocked = false;
+
+    }
+
+  })
+  .catch(error => {
+
+    console.error(
+      'خطأ في انتهاء الوقت:',
+      error
+    );
+
+    finishLock = false;
+
+    roundWinnerLocked = false;
+
+  });
+
+}
 
 
 // =========================================================
@@ -2921,13 +3737,21 @@ function updateTimerDisplay() {
       timerSeconds / 60
     )
     .toString()
-    .padStart(2,'0');
+    .padStart(
+      2,
+      '0'
+    );
 
 
   const secs =
-    (timerSeconds % 60)
+    (
+      timerSeconds % 60
+    )
     .toString()
-    .padStart(2,'0');
+    .padStart(
+      2,
+      '0'
+    );
 
 
   document.getElementById(
@@ -2938,16 +3762,27 @@ function updateTimerDisplay() {
 }
 
 
-
 // =========================================================
 // 🛑 إيقاف المؤقت
 // =========================================================
 
 function stopTimer() {
 
-  isGameRunning = false;
+  isGameRunning =
+    false;
 
-  clearInterval(timerInterval);
+
+  clearInterval(
+    timerInterval
+  );
+
+
+  timerInterval =
+    null;
+
+
+  activeTimerRoundId =
+    null;
 
 
   document
@@ -2961,13 +3796,69 @@ function stopTimer() {
 }
 
 
+// =========================================================
+// 🆕 تشغيل اللعبة لأول مرة
+// =========================================================
+
+async function initializeGame() {
+
+  updateScoreBoard();
+
+  updateTimerDisplay();
+
+
+  // ---------------------------------
+  // إذا طلبت لعبة جديدة
+  // ---------------------------------
+
+  if (forceNewGame) {
+
+    try {
+
+      await resetGame();
+
+
+      // إزالة ?newgame=1 من الرابط
+      // بدون إعادة تحميل الصفحة
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'خطأ في إعادة اللعبة:',
+        error
+      );
+
+      alert(
+        'تعذر إنشاء لعبة جديدة.'
+      );
+
+    }
+
+  }
+
+
+  // ---------------------------------
+  // بعد التأكد من الحالة
+  // نبدأ مستمع Firebase
+  // ---------------------------------
+
+  bindFirebaseListeners();
+
+}
+
 
 // =========================================================
-// 🎬 تشغيل أولي
+// 🎬 تشغيل
 // =========================================================
 
-updateScoreBoard();
-
+initializeGame();
 
 </script>
 
