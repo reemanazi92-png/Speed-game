@@ -66,22 +66,6 @@
       color: var(--accent-color);
     }
 
-    .header-controls {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-
-    .mute-btn {
-      background: transparent;
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      font-size: 1.2rem;
-      padding: 8px 15px;
-      border-radius: 12px;
-      cursor: pointer;
-    }
-
     .scoreboard-summary {
       display: flex;
       gap: 20px;
@@ -114,6 +98,7 @@
       gap: 12px;
       margin-bottom: 20px;
       flex-wrap: wrap;
+      z-index: 10;
     }
 
     .cat-btn {
@@ -141,6 +126,7 @@
       grid-template-columns: 1fr 2fr 1fr;
       gap: 20px;
       flex-grow: 1;
+      z-index: 5;
     }
 
     @media (max-width: 900px) {
@@ -292,8 +278,10 @@
       border-radius: 50px;
       cursor: pointer;
       box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+      z-index: 20;
     }
 
+    /* إصلاح حظر الشاشة: إعطاء display: none بشكل افتراضي */
     .overlay {
       position: fixed;
       top: 0;
@@ -302,19 +290,15 @@
       height: 100vh;
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(15px);
-      display: flex;
+      display: none; 
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s ease;
+      z-index: 9999;
     }
 
     .overlay.active {
-      opacity: 1;
-      pointer-events: all;
+      display: flex !important;
     }
 
     .result-card {
@@ -354,9 +338,6 @@
     <div class="scoreboard-summary">
       <div class="score-badge team-a" id="score-team-a">🔵 الفريق أ: 0 نقطة</div>
       <div class="score-badge team-b" id="score-team-b">🔴 الفريق ب: 0 نقطة</div>
-    </div>
-    <div class="header-controls">
-      <button class="mute-btn" id="mute-button" onclick="toggleMute()">🔊</button>
     </div>
   </header>
 
@@ -410,7 +391,6 @@
   </div>
 
   <script>
-    // 1. إعدادات Firebase
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -424,7 +404,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 2. بنك الأسئلة
     const questionsBank = [
       {
         id: 1,
@@ -443,16 +422,9 @@
         category: "ثقافة عامة",
         question: "اذكر إحدى قارات العالم:",
         answers: ["آسيا", "أفريقيا", "أوروبا", "أمريكا الشمالية", "أمريكا الجنوبية", "أستراليا", "أنتاركتيكا"]
-      },
-      {
-        id: 4,
-        category: "أمن سيبراني",
-        question: "اذكر نوعاً من أنواع الهجمات السيبرانية الشهيرة:",
-        answers: ["التصيد", "التصيد الاحتيالي", "Phishing", "Ransomware", "فدية", "DDoS", "Man in the middle"]
       }
     ];
 
-    // 3. حالة اللعبة
     let currentRound = 1;
     let scoreTeamA = 0;
     let scoreTeamB = 0;
@@ -463,9 +435,7 @@
     let currentQuestion = null;
     let timerInterval = null;
     let timeLeft = 60;
-    let isMuted = false;
 
-    // توليد الأكواد QR
     const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
     
     new QRCode(document.getElementById("qrcode-team-a"), {
@@ -487,18 +457,16 @@
       element.classList.add('selected');
     }
 
-    // 4. بدء الجولة وتصفية البيانات القديمة من Firebase
     async function startNextRound() {
-      // إلغاء الـ Timer القديم
       clearInterval(timerInterval);
 
-      // مسح الإجابات القديمة وحالة اللعبة السابقة لمنع التعليق
+      // إزالة طبقة Overlay لإعادة التفاعل مع الشاشة
+      document.getElementById("result-overlay").classList.remove("active");
+
+      // تفريغ قاعدة البيانات من الجلسات والبيانات السابقة
       await db.ref("answers").remove();
       await db.ref("gameState").remove();
 
-      document.getElementById("result-overlay").classList.remove("active");
-
-      // تصفية الأسئلة
       let filteredQuestions = questionsBank;
       if (selectedCategory !== "الكل") {
         filteredQuestions = questionsBank.filter(q => q.category === selectedCategory);
@@ -509,11 +477,9 @@
         return;
       }
 
-      // اختيار سؤال عشوائي
       const randomIndex = Math.floor(Math.random() * filteredQuestions.length);
       currentQuestion = filteredQuestions[randomIndex];
 
-      // إعادة ضبط الواجهة
       document.getElementById("round-title").innerText = `الجولة ${currentRound}`;
       document.getElementById("category-display").innerText = currentQuestion.category;
       document.getElementById("question-display").innerText = currentQuestion.question;
@@ -525,7 +491,6 @@
       document.getElementById("list-team-a").innerHTML = "";
       document.getElementById("list-team-b").innerHTML = "";
 
-      // تعيين حالة اللعبة الجديدة
       await db.ref("gameState").set({
         round: currentRound,
         questionId: currentQuestion.id,
@@ -557,7 +522,6 @@
       }, 1000);
     }
 
-    // 5. استقبال الإجابات أثناء الجولة الفعالة فقط
     db.ref("answers").on("child_added", (snapshot) => {
       const data = snapshot.val();
       if (!data || !currentQuestion) return;
@@ -623,11 +587,6 @@
 
       document.getElementById("result-overlay").classList.add("active");
       currentRound++;
-    }
-
-    function toggleMute() {
-      isMuted = !isMuted;
-      document.getElementById("mute-button").innerText = isMuted ? "🔇" : "🔊";
     }
   </script>
 </body>
