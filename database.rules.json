@@ -1,17 +1,17 @@
 {
   "rules": {
     "games": {
-      ".read": true,
+      ".read": "auth != null",
       
       "gameState": {
-        ".write": true,
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['status', 'roundId'])"
       },
 
       "answers": {
         "$roundId": {
           "$teamId": {
-            ".write": true,
+            ".write": "auth != null",
             "$answerId": {
               ".validate": "newData.hasChildren(['text', 'timestamp']) && newData.child('text').isString() && newData.child('text').val().length > 0"
             }
