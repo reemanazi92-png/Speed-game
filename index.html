@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لعبة التحدي والتنافس</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>🎛️ لوحة التحكم - لعبة السرعة</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-  
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Firebase Compat Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <!-- External Project Scripts -->
+  <script src="firebase-config.js"></script>
+  <script src="questions.js"></script>
 
   <style>
     :root {
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --team-a-color: #3b82f6;
-      --team-a-bg: rgba(59, 130, 246, 0.15);
-      --team-b-color: #ef4444;
-      --team-b-bg: rgba(239, 68, 68, 0.15);
-      --accent-color: #f59e0b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --text: #f8fafc;
     }
 
     * {
@@ -35,573 +36,254 @@
     }
 
     body {
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
+      background: var(--bg-dark);
+      color: var(--text);
       padding: 20px;
-      overflow-x: hidden;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
-    header {
-      width: 100%;
-      max-width: 1200px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 25px;
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
-
-    .brand-title {
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--accent-color);
-    }
-
-    .scoreboard-summary {
-      display: flex;
-      gap: 20px;
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    .score-badge {
-      padding: 6px 16px;
-      border-radius: 50px;
-    }
-
-    .score-badge.team-a {
-      background: var(--team-a-bg);
-      color: var(--team-a-color);
-      border: 1px solid var(--team-a-color);
-    }
-
-    .score-badge.team-b {
-      background: var(--team-b-bg);
-      color: var(--team-b-color);
-      border: 1px solid var(--team-b-color);
-    }
-
-    .categories-bar {
-      width: 100%;
-      max-width: 1200px;
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      z-index: 10;
-    }
-
-    .cat-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 10px 20px;
-      border-radius: 15px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 700;
-      transition: all 0.3s ease;
-    }
-
-    .cat-btn:hover, .cat-btn.selected {
-      background: var(--accent-color);
-      color: #000;
-      border-color: var(--accent-color);
-    }
-
-    main {
-      width: 100%;
-      max-width: 1200px;
-      display: grid;
-      grid-template-columns: 1fr 2fr 1fr;
-      gap: 20px;
-      flex-grow: 1;
-      z-index: 5;
-    }
-
-    @media (max-width: 900px) {
-      main { grid-template-columns: 1fr; }
-    }
-
-    .team-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    h1 {
       text-align: center;
+      margin-bottom: 20px;
+      color: var(--accent);
     }
 
-    .team-card.team-a { border-top: 5px solid var(--team-a-color); }
-    .team-card.team-b { border-top: 5px solid var(--team-b-color); }
-
-    .team-title {
-      font-size: 1.5rem;
-      font-weight: 900;
-      margin-bottom: 15px;
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .team-card.team-a .team-title { color: var(--team-a-color); }
-    .team-card.team-b .team-title { color: var(--team-b-color); }
-
-    .qr-container {
-      background: #fff;
-      padding: 10px;
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #334155;
+      padding: 12px 20px;
       border-radius: 12px;
-      margin-bottom: 15px;
-    }
-
-    .answers-count {
-      font-size: 1.2rem;
       font-weight: 700;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
-    .answers-list {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 250px;
-      overflow-y: auto;
-    }
-
-    .answer-item {
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .answer-item.correct {
-      background: rgba(34, 197, 94, 0.2);
-      border: 1px solid #22c55e;
-      color: #4ade80;
-    }
-
-    .answer-item.wrong {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid #ef4444;
-      color: #fca5a5;
-    }
-
-    .center-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .question-card {
-      width: 100%;
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 30px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 250px;
-      position: relative;
-    }
-
-    .round-badge {
-      position: absolute;
-      top: -15px;
-      background: var(--accent-color);
-      color: #000;
-      padding: 5px 20px;
+    .badge {
+      padding: 4px 12px;
       border-radius: 20px;
-      font-weight: 900;
+      font-size: 0.9rem;
     }
 
-    .category-tag {
-      color: var(--text-muted);
-      font-size: 1rem;
-      margin-bottom: 10px;
+    .badge.started { background: var(--green); color: #000; }
+    .badge.waiting { background: var(--accent); color: #000; }
+    .badge.finished { background: var(--red); color: #fff; }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
     }
 
-    .question-text {
-      font-size: 1.8rem;
-      font-weight: 700;
-      line-height: 1.5;
-    }
-
-    .timer-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .timer-display {
-      font-size: 3.5rem;
-      font-weight: 900;
-      color: var(--text-main);
-      background: rgba(0, 0, 0, 0.3);
-      padding: 10px 40px;
-      border-radius: 20px;
-      border: 2px solid var(--card-border);
-    }
-
-    .timer-warning {
-      color: #ef4444;
-      border-color: #ef4444;
-      animation: pulse 1s infinite;
-    }
-
-    .start-btn {
-      background: linear-gradient(45deg, #10b981, #059669);
-      color: #fff;
+    button {
+      padding: 14px;
       border: none;
-      padding: 15px 40px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-blue { background: var(--blue); color: #fff; }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 1rem;
+      margin-top: 10px;
+      outline: none;
+    }
+
+    .current-q-box {
       font-size: 1.3rem;
       font-weight: 900;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-      z-index: 20;
-    }
-
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(15px);
-      display: none; 
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .overlay.active {
-      display: flex !important;
-    }
-
-    .result-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 40px 60px;
-      border-radius: 30px;
       text-align: center;
-      max-width: 500px;
-      width: 90%;
-    }
-
-    .result-title {
-      font-size: 2.5rem;
-      color: var(--accent-color);
-      margin-bottom: 20px;
-      font-weight: 900;
-    }
-
-    .result-scores {
-      font-size: 1.5rem;
-      margin-bottom: 30px;
-      line-height: 1.8;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+      padding: 15px;
+      background: #0f172a;
+      border-radius: 12px;
+      margin-top: 10px;
+      border: 1px dashed var(--accent);
     }
   </style>
 </head>
+
 <body>
 
-  <header>
-    <div class="brand-title">🎮 تحدي المجموعات</div>
-    <div class="scoreboard-summary">
-      <div class="score-badge team-a" id="score-team-a">🔵 الفريق أ: 0 نقطة</div>
-      <div class="score-badge team-b" id="score-team-b">🔴 الفريق ب: 0 نقطة</div>
-    </div>
-  </header>
+  <h1>🎛️ لوحة إدارة اللعبة</h1>
 
-  <div class="categories-bar">
-    <button class="cat-btn selected" onclick="selectCategory('الكل', this)">الكل</button>
-    <button class="cat-btn" onclick="selectCategory('أمن سيبراني', this)">أمن سيبراني</button>
-    <button class="cat-btn" onclick="selectCategory('شبكات', this)">شبكات</button>
-    <button class="cat-btn" onclick="selectCategory('ثقافة عامة', this)">ثقافة عامة</button>
+  <!-- شريط الحالة الحالية -->
+  <div class="status-bar">
+    <div>الحالة: <span id="game-status" class="badge waiting">جاري التحميل...</span></div>
+    <div>الجولة الحالية: <span id="round-num" style="color: var(--accent);">--</span></div>
   </div>
 
-  <main>
-    <div class="team-card team-a">
-      <div class="team-title">الفريق (أ)</div>
-      <div class="qr-container" id="qrcode-team-a"></div>
-      <div class="answers-count" id="count-team-a">0 / 5</div>
-      <div class="answers-list" id="list-team-a"></div>
+  <!-- التحكم بالجولة والسؤال -->
+  <div class="card">
+    <h3>❓ اختيار السؤال</h3>
+    
+    <div class="current-q-box" id="current-question-display">
+      لم يتم اختيار سؤال بعد
     </div>
 
-    <div class="center-panel">
-      <div class="question-card">
-        <div class="round-badge" id="round-title">الجولة 1</div>
-        <div class="category-tag" id="category-display">اضغط "بدء الجولة" للبدء</div>
-        <div class="question-text" id="question-display">جاهز للتحدي؟</div>
-      </div>
-
-      <div class="timer-container">
-        <div class="timer-display" id="timer-display">01:00</div>
-        <button class="start-btn" onclick="startNextRound()">بدء الجولة 🚀</button>
-      </div>
+    <div style="margin-top: 15px;">
+      <label>أو اختر سؤالاً يدوياً من البنك:</label>
+      <select id="questions-select">
+        <option value="">-- اختر سؤالاً من القائمة --</option>
+      </select>
     </div>
 
-    <div class="team-card team-b">
-      <div class="team-title">الفريق (ب)</div>
-      <div class="qr-container" id="qrcode-team-b"></div>
-      <div class="answers-count" id="count-team-b">0 / 5</div>
-      <div class="answers-list" id="list-team-b"></div>
-    </div>
-  </main>
-
-  <div class="overlay" id="result-overlay">
-    <div class="result-card">
-      <div class="result-title" id="winner-title-header">🏆 انتهت الجولة!</div>
-      <div class="result-scores" id="final-score">
-        🔵 الفريق أ: 0
-        <br>
-        🔴 الفريق ب: 0
-      </div>
-      <div id="winner-text" style="margin-bottom: 20px; font-size: 1.2rem; color: var(--text-muted);"></div>
-      <button class="start-btn" onclick="startNextRound()">الجولة التالية ⏩</button>
+    <div class="btn-group">
+      <button class="btn-blue" onclick="pickRandomQuestion()">🎲 سؤال عشوائي</button>
+      <button class="btn-success" onclick="startRound()">🚀 بدء الجولة</button>
+      <button class="btn-danger" onclick="endRound()">🏁 إنهاء الجولة</button>
     </div>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+  <!-- التنقل بين الجولات والتصفير -->
+  <div class="card">
+    <h3>⚙️ إعدادات الإدارة</h3>
+    <div class="btn-group">
+      <button class="btn-primary" onclick="nextRound()">➡️ الجولة التالية</button>
+      <button class="btn-danger" onclick="resetGame()">🔄 إعادة تصفير اللعبة بالكامل</button>
+    </div>
+  </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+<script>
+  const selectEl = document.getElementById("questions-select");
+  const currentQDisplay = document.getElementById("current-question-display");
+  const gameStatusEl = document.getElementById("game-status");
+  const roundNumEl = document.getElementById("round-num");
 
-    const questionsBank = [
-      {
-        id: 1,
-        category: "أمن سيبراني",
-        question: "اذكر أحد عناصر مثلث السرية والنزاهة والتوفر (CIA Triad):",
-        answers: ["السرية", "النزاهة", "التوفر", "Confidentiality", "Integrity", "Availability"]
-      },
-      {
-        id: 2,
-        category: "شبكات",
-        question: "اذكر أحد بروتوكولات طبقة التطبيقات (Application Layer):",
-        answers: ["HTTP", "HTTPS", "FTP", "DNS", "DHCP", "SSH", "SMTP"]
-      },
-      {
-        id: 3,
-        category: "ثقافة عامة",
-        question: "اذكر إحدى قارات العالم:",
-        answers: ["آسيا", "أفريقيا", "أوروبا", "أمريكا الشمالية", "أمريكا الجنوبية", "أستراليا", "أنتاركتيكا"]
-      }
-    ];
+  let currentRoundId = 1;
+  let selectedQuestion = null;
 
-    let currentRound = 1;
-    let scoreTeamA = 0;
-    let scoreTeamB = 0;
-    let countTeamA = 0;
-    let countTeamB = 0;
-    
-    let selectedCategory = "الكل";
-    let currentQuestion = null;
-    let timerInterval = null;
-    let timeLeft = 60;
-    let usedAnswers = new Set(); 
-
-    // إصلاح استخراج رابط الصفحة بشكل دقيق
-    const getBaseUrl = () => {
-      const href = window.location.href;
-      return href.substring(0, href.lastIndexOf('/'));
-    };
-    
-    new QRCode(document.getElementById("qrcode-team-a"), {
-      text: `${getBaseUrl()}/player.html?team=A`,
-      width: 100,
-      height: 100
+  // تعبئة القائمة المنسدلة بالأسئلة من QUESTIONS_BANK
+  if (typeof QUESTIONS_BANK !== 'undefined') {
+    QUESTIONS_BANK.forEach((q, index) => {
+      const opt = document.createElement("option");
+      opt.value = index;
+      opt.innerText = `[${q.category}] ${q.text}`;
+      selectEl.appendChild(opt);
     });
+  }
 
-    new QRCode(document.getElementById("qrcode-team-b"), {
-      text: `${getBaseUrl()}/player.html?team=B`,
-      width: 100,
-      height: 100
-    });
+  selectEl.addEventListener("change", (e) => {
+    const index = e.target.value;
+    if (index !== "") {
+      selectedQuestion = QUESTIONS_BANK[index];
+      currentQDisplay.innerText = `${selectedQuestion.category}: ${selectedQuestion.text}`;
+    }
+  });
 
-    function selectCategory(cat, element) {
-      selectedCategory = cat;
-      const buttons = document.querySelectorAll('.cat-btn');
-      buttons.forEach(btn => btn.classList.remove('selected'));
-      element.classList.add('selected');
+  // استماع لحالة اللعبة الحالية من Firebase
+  db.ref("games/gameState").on("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      gameStatusEl.innerText = "غير معروفة";
+      gameStatusEl.className = "badge waiting";
+      roundNumEl.innerText = "1";
+      return;
     }
 
-    async function startNextRound() {
-      clearInterval(timerInterval);
+    currentRoundId = data.roundId || 1;
+    roundNumEl.innerText = currentRoundId;
 
-      document.getElementById("result-overlay").classList.remove("active");
+    const status = data.status || "waiting";
+    if (status === "started") {
+      gameStatusEl.innerText = "جارية 🚀";
+      gameStatusEl.className = "badge started";
+    } else if (status === "finished") {
+      gameStatusEl.innerText = "منتهية 🏁";
+      gameStatusEl.className = "badge finished";
+    } else {
+      gameStatusEl.innerText = "انتظار ⏳";
+      gameStatusEl.className = "badge waiting";
+    }
 
-      await db.ref("answers").remove();
-      await db.ref("gameState").remove();
+    if (data.currentQuestion) {
+      currentQDisplay.innerText = `${data.category || ''}: ${data.currentQuestion}`;
+    }
+  });
 
-      let filteredQuestions = questionsBank;
-      if (selectedCategory !== "الكل") {
-        filteredQuestions = questionsBank.filter(q => q.category === selectedCategory);
-      }
+  // اختيار سؤال عشوائي
+  function pickRandomQuestion() {
+    if (typeof QUESTIONS_BANK === 'undefined' || QUESTIONS_BANK.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * QUESTIONS_BANK.length);
+    selectedQuestion = QUESTIONS_BANK[randomIndex];
+    selectEl.value = randomIndex;
+    currentQDisplay.innerText = `${selectedQuestion.category}: ${selectedQuestion.text}`;
+  }
 
-      if (filteredQuestions.length === 0) {
-        alert("لا توجد أسئلة متوفرة في هذا القسم!");
-        return;
-      }
+  // بدء الجولة
+  async function startRound() {
+    if (!selectedQuestion) {
+      alert("الرجاء اختيار سؤال أولاً أو الضغط على سؤال عشوائي");
+      return;
+    }
 
-      const randomIndex = Math.floor(Math.random() * filteredQuestions.length);
-      currentQuestion = filteredQuestions[randomIndex];
+    await db.ref("games/gameState").set({
+      roundId: currentRoundId,
+      status: "started",
+      currentQuestion: selectedQuestion.text,
+      category: selectedQuestion.category
+    });
+  }
 
-      document.getElementById("round-title").innerText = `الجولة ${currentRound}`;
-      document.getElementById("category-display").innerText = currentQuestion.category;
-      document.getElementById("question-display").innerText = currentQuestion.question;
+  // إنهاء الجولة
+  async function endRound() {
+    await db.ref("games/gameState/status").set("finished");
+  }
 
-      countTeamA = 0;
-      countTeamB = 0;
-      usedAnswers.clear(); 
-      
-      document.getElementById("count-team-a").innerText = `0 / 5`;
-      document.getElementById("count-team-b").innerText = `0 / 5`;
-      document.getElementById("list-team-a").innerHTML = "";
-      document.getElementById("list-team-b").innerHTML = "";
+  // الانتقال للجولة التالية
+  async function nextRound() {
+    currentRoundId++;
+    selectedQuestion = null;
+    selectEl.value = "";
+    currentQDisplay.innerText = "اختر سؤالاً للجولة الجديدة";
 
-      await db.ref("gameState").set({
-        round: currentRound,
-        questionId: currentQuestion.id,
-        status: "active"
+    await db.ref("games/gameState").set({
+      roundId: currentRoundId,
+      status: "waiting",
+      currentQuestion: "",
+      category: ""
+    });
+  }
+
+  // تصفير اللعبة بالكامل
+  async function resetGame() {
+    if (confirm("هل أنت تأكد من إعادة تصفير اللعبة وحذف جميع الإجابات والجولات؟")) {
+      await db.ref("games").set({
+        gameState: {
+          roundId: 1,
+          status: "waiting",
+          currentQuestion: "",
+          category: ""
+        }
       });
-
-      startTimer(60);
+      alert("تم إعادة التصفير بنجاح");
     }
+  }
+</script>
 
-    function startTimer(seconds) {
-      clearInterval(timerInterval); 
-      timeLeft = seconds;
-      const timerDisplay = document.getElementById("timer-display");
-      timerDisplay.classList.remove("timer-warning");
-
-      timerInterval = setInterval(() => {
-        timeLeft--;
-        let mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-        let secs = (timeLeft % 60).toString().padStart(2, '0');
-        timerDisplay.innerText = `${mins}:${secs}`;
-
-        if (timeLeft <= 10) {
-          timerDisplay.classList.add("timer-warning");
-        }
-
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          endRound("⏱️ انتهى الوقت!");
-        }
-      }, 1000);
-    }
-
-    db.ref("answers").on("child_added", (snapshot) => {
-      const data = snapshot.val();
-      if (!data || !currentQuestion) return;
-
-      const answerText = data.text ? data.text.trim() : "";
-      const team = data.team;
-      const formattedAnswer = answerText.toLowerCase();
-
-      // التحقق مما إذا كانت الإجابة صحيحة ولم تُستخدم سابقاً في هذه الجولة
-      const isCorrectAnswer = currentQuestion.answers.some(
-        ans => ans.toLowerCase() === formattedAnswer
-      );
-      
-      const isAlreadyUsed = usedAnswers.has(formattedAnswer);
-      const isCorrect = isCorrectAnswer && !isAlreadyUsed;
-
-      if (isCorrect) {
-        usedAnswers.add(formattedAnswer);
-        if (team === "A") {
-          countTeamA++;
-          scoreTeamA += 10;
-          document.getElementById("count-team-a").innerText = `${countTeamA} / 5`;
-        } else if (team === "B") {
-          countTeamB++;
-          scoreTeamB += 10;
-          document.getElementById("count-team-b").innerText = `${countTeamB} / 5`;
-        }
-        updateScoreBoard();
-      }
-
-      addAnswerToList(team, answerText, isCorrect);
-
-      if (countTeamA >= 5 || countTeamB >= 5) {
-        clearInterval(timerInterval);
-        let winnerText = "تعادل!";
-        if (countTeamA > countTeamB) winnerText = "الفريق (أ)";
-        else if (countTeamB > countTeamA) winnerText = "الفريق (ب)";
-        
-        endRound(`🏆 فاز ${winnerText} في هذه الجولة!`);
-      }
-
-      snapshot.ref.remove();
-    });
-
-    function addAnswerToList(team, text, isCorrect) {
-      const listId = team === "A" ? "list-team-a" : "list-team-b";
-      const listEl = document.getElementById(listId);
-      
-      const item = document.createElement("div");
-      item.className = `answer-item ${isCorrect ? 'correct' : 'wrong'}`;
-      item.innerText = `${text} ${isCorrect ? '✓' : '✗'}`;
-      
-      listEl.appendChild(item);
-      listEl.scrollTop = listEl.scrollHeight;
-    }
-
-    function updateScoreBoard() {
-      document.getElementById("score-team-a").innerText = `🔵 الفريق أ: ${scoreTeamA} نقطة`;
-      document.getElementById("score-team-b").innerText = `🔴 الفريق ب: ${scoreTeamB} نقطة`;
-    }
-
-    function endRound(message) {
-      db.ref("gameState/status").set("ended");
-
-      document.getElementById("winner-title-header").innerText = message;
-      document.getElementById("winner-text").innerText = "جاهزون للجولة القادمة؟";
-      document.getElementById("final-score").innerHTML = `
-        🔵 الفريق أ: ${scoreTeamA} نقطة
-        <br>
-        🔴 الفريق ب: ${scoreTeamB} نقطة
-      `;
-
-      document.getElementById("result-overlay").classList.add("active");
-      currentRound++;
-    }
-  </script>
 </body>
 </html>
