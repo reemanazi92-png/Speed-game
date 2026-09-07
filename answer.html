@@ -4,28 +4,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ واجهة الإجابة - لعبة السرعة</title>
 
-  <title>⚡ واجهة إدخال الإجابات</title>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap"
-    rel="stylesheet"
-  >
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 
   <!-- Firebase Compat Libraries -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <!-- External Config Script -->
+  <script src="firebase-config.js"></script>
 
   <style>
     :root {
       --bg-dark: #0f172a;
       --card-bg: #1e293b;
-      --blue-team: #3b82f6;
-      --red-team: #ef4444;
       --accent: #f59e0b;
-      --text-white: #f8fafc;
       --green: #10b981;
-      --gray: #334155;
+      --red: #ef4444;
+      --text: #f8fafc;
     }
 
     * {
@@ -36,463 +34,254 @@
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-white);
-      padding: 15px;
-      text-align: center;
+      background: var(--bg-dark);
+      color: var(--text);
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
       min-height: 100vh;
-    }
-
-    .header-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      gap: 10px;
-    }
-
-    .badge-team {
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-weight: 900;
-      font-size: 1.1rem;
-    }
-
-    .badge-team.A {
-      background: var(--blue-team);
-      color: #fff;
-    }
-
-    .badge-team.B {
-      background: var(--red-team);
-      color: #fff;
-    }
-
-    .q-card {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 18px 15px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .category-tag {
-      color: var(--accent);
-      font-weight: 700;
-      margin-bottom: 7px;
-      display: block;
-    }
-
-    .q-title {
-      font-size: 1.4rem;
-      font-weight: 900;
-      line-height: 1.6;
-    }
-
-    .inputs-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      min-width: 0;
-      background: #0f172a;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 10px;
-      padding: 12px;
-      color: #fff;
-      font-size: 1.1rem;
-      text-align: right;
-      outline: none;
-    }
-
-    input[type="text"]:focus {
-      border-color: var(--accent);
-    }
-
-    input[type="text"]:disabled {
-      background: rgba(255,255,255,0.05);
-      color: #94a3b8;
-    }
-
-    button.btn-send {
-      background: var(--accent);
-      border: none;
-      border-radius: 10px;
-      padding: 0 20px;
-      font-weight: 900;
-      font-size: 1rem;
-      color: #000;
-      cursor: pointer;
-      min-width: 90px;
-    }
-
-    button.btn-send:disabled {
-      background: var(--gray);
-      color: #94a3b8;
-      cursor: not-allowed;
-    }
-
-    .overlay-wait {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.97);
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
-      z-index: 100;
-      font-size: 1.5rem;
-      font-weight: 900;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
       padding: 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
     }
 
-    .overlay-wait.hidden {
-      display: none;
+    .category-tag {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--accent);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
     }
 
-    .wait-small {
+    .question-box {
+      font-size: 1.4rem;
+      font-weight: 900;
+      margin-bottom: 25px;
+      color: #fff;
+      line-height: 1.5;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 15px;
+      border-radius: 12px;
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      outline: none;
+      text-align: center;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--green);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .overlay h2 {
+      font-size: 2rem;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .answers-list {
+      margin-top: 20px;
+      text-align: right;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .answer-item {
+      background: #0f172a;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 8px;
       font-size: 1rem;
-      color: #94a3b8;
-      margin-top: 10px;
-    }
-
-    .status {
-      margin-top: 15px;
-      color: #94a3b8;
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: 500px) {
-      .header-info {
-        flex-direction: row;
-      }
-
-      .q-title {
-        font-size: 1.2rem;
-      }
-
-      input[type="text"] {
-        font-size: 1rem;
-      }
-
-      button.btn-send {
-        min-width: 75px;
-        padding: 0 12px;
-      }
+      border-right: 4px solid var(--accent);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- شاشة الانتظار -->
-  <div class="overlay-wait" id="overlay-wait">
-    <div id="wait-message">
-      ⏳ بانتظار بدء الجولة من الشاشة الرئيسية...
-    </div>
-    <div class="wait-small">
-      سيتم فتح الإجابات تلقائياً عند بدء الجولة
-    </div>
+  <!-- شاشة الانتظار إذا لم تبدأ الجولة -->
+  <div id="waiting-screen" class="overlay">
+    <h2>⏳ في انتظار بدء الجولة...</h2>
+    <p style="color: #94a3b8;">سيتم عرض السؤال فور بدئه من قبل المسؤول</p>
   </div>
 
-  <!-- معلومات الفريق والجولة -->
-  <div class="header-info">
-    <div class="badge-team" id="team-badge">
-      الفريق --
-    </div>
-    <div style="color: var(--accent); font-weight: 900;" id="display-round-id">
-      الجولة --
-    </div>
+  <!-- شاشة انتهاء الجولة -->
+  <div id="finished-screen" class="overlay" style="display: none;">
+    <h2>🏁 انتهت الجولة!</h2>
+    <p style="color: #94a3b8;">استعد للجولة القادمة...</p>
   </div>
 
-  <!-- السؤال -->
-  <div class="q-card">
-    <span class="category-tag" id="display-category">معلومات عامة</span>
-    <div class="q-title" id="display-question">بانتظار السؤال...</div>
+  <!-- واجهة إدخال الإجابة -->
+  <div class="card">
+    <div id="category-display" class="category-tag">🧠 ثقافة عامة</div>
+    <div id="question-display" class="question-box">جاري تحميل السؤال...</div>
+
+    <form id="answer-form">
+      <select id="team-select" required>
+        <option value="" disabled selected>اختر فريقك...</option>
+
+        <option value="الفريق الأول">الفريق الأول</option>
+        <option value="الفريق الثاني">الفريق الثاني</option>
+        <option value="الفريق الثالث">الفريق الثالث</option>
+        <option value="الفريق الرابع">الفريق الرابع</option>
+      </select>
+
+      <input type="text" id="answer-input" placeholder="اكتب إجابتك هنا..." autocomplete="off" required>
+
+      <button type="submit" id="submit-btn">إرسال الإجابة 🚀</button>
+    </form>
+
+    <div class="answers-list" id="my-answers-list"></div>
   </div>
-
-  <!-- الإجابات -->
-  <div class="inputs-container">
-    <div class="input-row">
-      <input type="text" id="input-ans-1" placeholder="الإجابة 1" disabled autocomplete="off">
-      <button class="btn-send" id="btn-ans-1" onclick="sendAnswer(1)" disabled>إرسال</button>
-    </div>
-
-    <div class="input-row">
-      <input type="text" id="input-ans-2" placeholder="الإجابة 2" disabled autocomplete="off">
-      <button class="btn-send" id="btn-ans-2" onclick="sendAnswer(2)" disabled>إرسال</button>
-    </div>
-
-    <div class="input-row">
-      <input type="text" id="input-ans-3" placeholder="الإجابة 3" disabled autocomplete="off">
-      <button class="btn-send" id="btn-ans-3" onclick="sendAnswer(3)" disabled>إرسال</button>
-    </div>
-
-    <div class="input-row">
-      <input type="text" id="input-ans-4" placeholder="الإجابة 4" disabled autocomplete="off">
-      <button class="btn-send" id="btn-ans-4" onclick="sendAnswer(4)" disabled>إرسال</button>
-    </div>
-
-    <div class="input-row">
-      <input type="text" id="input-ans-5" placeholder="الإجابة 5" disabled autocomplete="off">
-      <button class="btn-send" id="btn-ans-5" onclick="sendAnswer(5)" disabled>إرسال</button>
-    </div>
-  </div>
-
-  <div class="status" id="status-text">جاهز</div>
 
 <script>
-  /* =====================================================
-     إعداد Firebase
-  ===================================================== */
-  const firebaseConfig = {
-    databaseURL: "https://speed-game-reem-default-rtdb.firebaseio.com/",
-    projectId: "speed-game-reem"
-  };
+  let currentRoundId = 1;
+  let gameStatus = "waiting";
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  const waitingScreen = document.getElementById("waiting-screen");
+  const finishedScreen = document.getElementById("finished-screen");
+  const categoryDisplay = document.getElementById("category-display");
+  const questionDisplay = document.getElementById("question-display");
+  const answerForm = document.getElementById("answer-form");
+  const answerInput = document.getElementById("answer-input");
+  const teamSelect = document.getElementById("team-select");
+  const myAnswersList = document.getElementById("my-answers-list");
 
-  /* =====================================================
-     معرفة الفريق من الرابط (?team=A أو ?team=B)
-  ===================================================== */
-  const urlParams = new URLSearchParams(window.location.search);
-  let team = (urlParams.get("team") || "A").toUpperCase();
-
-  if (team !== "A" && team !== "B") {
-    team = "A";
-  }
-
-  /* =====================================================
-     عناصر الصفحة
-  ===================================================== */
-  const teamBadge = document.getElementById("team-badge");
-  const overlayWait = document.getElementById("overlay-wait");
-  const waitMessage = document.getElementById("wait-message");
-  const displayQuestion = document.getElementById("display-question");
-  const displayCategory = document.getElementById("display-category");
-  const displayRoundId = document.getElementById("display-round-id");
-  const statusText = document.getElementById("status-text");
-
-  /* =====================================================
-     عرض الفريق
-  ===================================================== */
-  teamBadge.innerText = team === "A" ? "الفريق أ (الأزرق)" : "الفريق ب (الأحمر)";
-  teamBadge.classList.add(team);
-
-  /* =====================================================
-     متغيرات اللعبة
-  ===================================================== */
-  let currentRoundId = null;
-  let currentGameStatus = "waiting";
-  let answersRefListener = null;
-
-  function getAnswersPath() {
-    if (currentRoundId === null) return null;
-    return `games/answers/round_${currentRoundId}/team${team}`;
-  }
-
-  /* =====================================================
-     تعطيل وتصفير الخانات
-  ===================================================== */
-  function disableAllInputs() {
-    for (let i = 1; i <= 5; i++) {
-      document.getElementById(`input-ans-${i}`).disabled = true;
-      document.getElementById(`btn-ans-${i}`).disabled = true;
-    }
-  }
-
-  function resetInputs() {
-    for (let i = 1; i <= 5; i++) {
-      const input = document.getElementById(`input-ans-${i}`);
-      const button = document.getElementById(`btn-ans-${i}`);
-      input.value = "";
-      input.disabled = true;
-      button.disabled = true;
-      button.innerText = "إرسال";
-    }
-  }
-
-  /* =====================================================
-     مزامنة الاستماع اللحظي لإجابات الفريق
-  ===================================================== */
-  function listenToAnswers() {
-    if (answersRefListener) {
-      answersRefListener.off(); // إيقاف المستمع القديم لمنع تكرار المزامنة
-    }
-
-    const path = getAnswersPath();
-    if (!path) return;
-
-    answersRefListener = db.ref(path);
-    answersRefListener.on("value", (snapshot) => {
-      if (currentGameStatus !== "started") return;
-
-      const answers = snapshot.val() || {};
-      let currentCount = 0;
-
-      for (let i = 1; i <= 5; i++) {
-        if (answers[`answer${i}`]) currentCount++;
-      }
-
-      for (let i = 1; i <= 5; i++) {
-        const input = document.getElementById(`input-ans-${i}`);
-        const button = document.getElementById(`btn-ans-${i}`);
-        const savedAnswer = answers[`answer${i}`];
-
-        if (savedAnswer) {
-          input.value = savedAnswer.text || "";
-          input.disabled = true;
-          button.disabled = true;
-          button.innerText = "تم ✅";
-        } else if (i === currentCount + 1) {
-          input.disabled = false;
-          button.disabled = false;
-          button.innerText = "إرسال";
-        } else {
-          input.disabled = true;
-          button.disabled = true;
-          button.innerText = "إرسال";
-        }
-      }
-
-      statusText.innerText = `الجولة ${currentRoundId} • تم إرسال ${currentCount} من 5`;
-    });
-  }
-
-  /* =====================================================
-     الاستماع إلى حالة اللعبة الجارية
-  ===================================================== */
+  // استماع لحالة اللعبة من Firebase
   db.ref("games/gameState").on("value", (snapshot) => {
     const data = snapshot.val();
+    if (!data) return;
 
-    if (!data) {
-      currentRoundId = null;
-      currentGameStatus = "waiting";
-      displayQuestion.innerText = "بانتظار السؤال...";
-      displayCategory.innerText = "معلومات عامة";
-      displayRoundId.innerText = "الجولة --";
-      overlayWait.classList.remove("hidden");
-      waitMessage.innerText = "⏳ بانتظار بدء الجولة من الشاشة الرئيسية...";
-      resetInputs();
-      return;
-    }
+    currentRoundId = data.roundId || 1;
+    gameStatus = data.status || "waiting";
 
-    const newRoundId = data.roundId != null ? String(data.roundId) : "1";
-    const roundChanged = currentRoundId !== newRoundId;
+    categoryDisplay.innerText = data.category || "عام";
+    questionDisplay.innerText = data.currentQuestion || "انتظر السؤال...";
 
-    currentRoundId = newRoundId;
-    currentGameStatus = data.status || "waiting";
-
-    displayQuestion.innerText = data.currentQuestion || "بانتظار السؤال...";
-    displayCategory.innerText = data.category || "عام";
-    displayRoundId.innerText = `الجولة ${currentRoundId}`;
-
-    if (roundChanged) {
-      resetInputs();
-      statusText.innerText = `تم الانتقال إلى الجولة ${currentRoundId}`;
-    }
-
-    if (currentGameStatus === "started") {
-      overlayWait.classList.add("hidden");
-      listenToAnswers(); // بدء المزامنة الحية لإجابات هذه الجولة
+    if (gameStatus === "started") {
+      waitingScreen.style.display = "none";
+      finishedScreen.style.display = "none";
+    } else if (gameStatus === "finished") {
+      waitingScreen.style.display = "none";
+      finishedScreen.style.display = "flex";
     } else {
-      overlayWait.classList.remove("hidden");
-      disableAllInputs();
-
-      if (currentGameStatus === "finished") {
-        waitMessage.innerText = "🏁 انتهت الجولة";
-      } else {
-        waitMessage.innerText = "⏳ بانتظار بدء الجولة من الشاشة الرئيسية...";
-      }
+      waitingScreen.style.display = "flex";
+      finishedScreen.style.display = "none";
     }
+
+    listenToMyAnswers();
   });
 
-  /* =====================================================
-     إرسال إجابة إلى Database
-  ===================================================== */
-  async function sendAnswer(index) {
-    if (currentGameStatus !== "started") {
-      alert("الجولة لم تبدأ بعد");
+  // إرسال الإجابة
+  answerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const teamId = teamSelect.value;
+    const answerText = answerInput.value.trim();
+
+    if (!teamId) {
+      alert("الرجاء اختيار الفريق أولاً");
       return;
     }
 
-    if (currentRoundId === null) {
-      alert("لم يتم تحديد الجولة");
+    if (!answerText) return;
+
+    if (gameStatus !== "started") {
+      alert("الجولة ليست نَشِطة حالياً");
       return;
     }
-
-    const input = document.getElementById(`input-ans-${index}`);
-    const button = document.getElementById(`btn-ans-${index}`);
-    const text = input.value.trim();
-
-    if (!text) {
-      input.focus();
-      return;
-    }
-
-    button.disabled = true;
-    button.innerText = "جاري الإرسال...";
 
     try {
-      const path = getAnswersPath();
-      const snapshot = await db.ref(path).once("value");
-      const answers = snapshot.val() || {};
-
-      let nextIndex = 1;
-      while (nextIndex <= 5 && answers[`answer${nextIndex}`]) {
-        nextIndex++;
-      }
-
-      if (nextIndex > 5) {
-        alert("تم إرسال جميع الإجابات");
-        return;
-      }
-
-      if (index !== nextIndex) {
-        alert(`يجب إرسال الإجابة رقم ${nextIndex} أولاً`);
-        button.disabled = false;
-        button.innerText = "إرسال";
-        return;
-      }
-
-      // إرسال البيانات (المستمع اللحظي يتولى قفل الخانة فور نجاح الحفظ)
-      await db.ref(`${path}/answer${index}`).set({
-        text: text,
+      const answerRef = db.ref(`games/answers/${currentRoundId}/${teamId}`).push();
+      await answerRef.set({
+        text: answerText,
         timestamp: firebase.database.ServerValue.TIMESTAMP
       });
 
-    } catch (error) {
-      console.error("خطأ أثناء إرسال الإجابة:", error);
-      alert("تعذر إرسال الإجابة، تأكدي من اتصال الإنترنت");
-      button.disabled = false;
-      button.innerText = "إرسال";
+      answerInput.value = "";
+      answerInput.focus();
+    } catch (err) {
+      console.error("خطأ في إرسال الإجابة:", err);
+      alert("تعذر إرسال الإجابة، يرجى المحاولة مرة أخرى");
     }
-  }
+  });
 
-  /* =====================================================
-     دعم زر Enter للإرسال السريع
-  ===================================================== */
-  for (let i = 1; i <= 5; i++) {
-    const input = document.getElementById(`input-ans-${i}`);
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        sendAnswer(i);
+  // عرض الإجابات المرسلة للفريق في الجولة الحالية
+  function listenToMyAnswers() {
+    const teamId = teamSelect.value;
+    if (!teamId) return;
+
+    db.ref(`games/answers/${currentRoundId}/${teamId}`).on("value", (snapshot) => {
+      myAnswersList.innerHTML = "";
+      const answers = snapshot.val();
+      if (answers) {
+        Object.values(answers).forEach(ans => {
+          const item = document.createElement("div");
+          item.className = "answer-item";
+          item.innerText = ans.text;
+          myAnswersList.appendChild(item);
+        });
       }
     });
   }
+
+  teamSelect.addEventListener("change", listenToMyAnswers);
 </script>
 
 </body>
