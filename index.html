@@ -281,7 +281,6 @@
       z-index: 20;
     }
 
-    /* إصلاح حظر الشاشة: إعطاء display: none بشكل افتراضي */
     .overlay {
       position: fixed;
       top: 0;
@@ -435,17 +434,22 @@
     let currentQuestion = null;
     let timerInterval = null;
     let timeLeft = 60;
+    let usedAnswers = new Set(); 
 
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    // إصلاح استخراج رابط الصفحة بشكل دقيق
+    const getBaseUrl = () => {
+      const href = window.location.href;
+      return href.substring(0, href.lastIndexOf('/'));
+    };
     
     new QRCode(document.getElementById("qrcode-team-a"), {
-      text: `${baseUrl}/player.html?team=A`,
+      text: `${getBaseUrl()}/player.html?team=A`,
       width: 100,
       height: 100
     });
 
     new QRCode(document.getElementById("qrcode-team-b"), {
-      text: `${baseUrl}/player.html?team=B`,
+      text: `${getBaseUrl()}/player.html?team=B`,
       width: 100,
       height: 100
     });
@@ -460,10 +464,8 @@
     async function startNextRound() {
       clearInterval(timerInterval);
 
-      // إزالة طبقة Overlay لإعادة التفاعل مع الشاشة
       document.getElementById("result-overlay").classList.remove("active");
 
-      // تفريغ قاعدة البيانات من الجلسات والبيانات السابقة
       await db.ref("answers").remove();
       await db.ref("gameState").remove();
 
@@ -486,6 +488,8 @@
 
       countTeamA = 0;
       countTeamB = 0;
+      usedAnswers.clear(); 
+      
       document.getElementById("count-team-a").innerText = `0 / 5`;
       document.getElementById("count-team-b").innerText = `0 / 5`;
       document.getElementById("list-team-a").innerHTML = "";
@@ -501,6 +505,7 @@
     }
 
     function startTimer(seconds) {
+      clearInterval(timerInterval); 
       timeLeft = seconds;
       const timerDisplay = document.getElementById("timer-display");
       timerDisplay.classList.remove("timer-warning");
@@ -528,14 +533,18 @@
 
       const answerText = data.text ? data.text.trim() : "";
       const team = data.team;
+      const formattedAnswer = answerText.toLowerCase();
 
-      const isCorrect = currentQuestion.answers.some(
-        ans => ans.toLowerCase() === answerText.toLowerCase()
+      // التحقق مما إذا كانت الإجابة صحيحة ولم تُستخدم سابقاً في هذه الجولة
+      const isCorrectAnswer = currentQuestion.answers.some(
+        ans => ans.toLowerCase() === formattedAnswer
       );
-
-      addAnswerToList(team, answerText, isCorrect);
+      
+      const isAlreadyUsed = usedAnswers.has(formattedAnswer);
+      const isCorrect = isCorrectAnswer && !isAlreadyUsed;
 
       if (isCorrect) {
+        usedAnswers.add(formattedAnswer);
         if (team === "A") {
           countTeamA++;
           scoreTeamA += 10;
@@ -548,10 +557,15 @@
         updateScoreBoard();
       }
 
+      addAnswerToList(team, answerText, isCorrect);
+
       if (countTeamA >= 5 || countTeamB >= 5) {
         clearInterval(timerInterval);
-        const winner = countTeamA >= 5 ? "الفريق (أ)" : "الفريق (ب)";
-        endRound(`🏆 فاز ${winner} في هذه الجولة!`);
+        let winnerText = "تعادل!";
+        if (countTeamA > countTeamB) winnerText = "الفريق (أ)";
+        else if (countTeamB > countTeamA) winnerText = "الفريق (ب)";
+        
+        endRound(`🏆 فاز ${winnerText} في هذه الجولة!`);
       }
 
       snapshot.ref.remove();
