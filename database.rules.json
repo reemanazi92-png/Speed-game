@@ -1,9 +1,22 @@
 {
   "rules": {
     "games": {
-      "$roomId": {
-        ".read": true,
-        ".write": true
+      ".read": true,
+      
+      "gameState": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['status', 'roundId'])"
+      },
+
+      "answers": {
+        "$roundId": {
+          "$teamId": {
+            ".write": true,
+            "$answerId": {
+              ".validate": "newData.hasChildren(['text', 'timestamp']) && newData.child('text').isString() && newData.child('text').val().length > 0"
+            }
+          }
+        }
       }
     }
   }
